@@ -1,0 +1,11 @@
+{
+  "agreement": 661,
+  "cases": 661,
+  "cpu_seconds": 1.203861637,
+  "dense_complete": 661,
+  "incomplete": 0,
+  "oracle_complete": 661,
+  "peak_rss_kib": 105220,
+  "phase": "regression",
+  "workers": 1
+}

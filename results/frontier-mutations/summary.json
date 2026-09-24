@@ -1,0 +1,134 @@
+{
+  "accepted": 0,
+  "mutations": 21,
+  "rejected": 21,
+  "results": [
+    {
+      "mutation": "certificate-query-mismatch",
+      "obligation": "query binding",
+      "reason": "certificate/query mismatch",
+      "status": "rejected"
+    },
+    {
+      "mutation": "extra-certificate-field",
+      "obligation": "schema",
+      "reason": "certificate fields",
+      "status": "rejected"
+    },
+    {
+      "mutation": "missing-frontier-row",
+      "obligation": "totality",
+      "reason": "missing or extra frontier rows",
+      "status": "rejected"
+    },
+    {
+      "mutation": "extra-frontier-row",
+      "obligation": "totality",
+      "reason": "missing or extra frontier rows",
+      "status": "rejected"
+    },
+    {
+      "mutation": "duplicate-frontier-index",
+      "obligation": "unique domain",
+      "reason": "duplicate frontier row",
+      "status": "rejected"
+    },
+    {
+      "mutation": "malformed-frontier-row",
+      "obligation": "row grammar",
+      "reason": "frontier row format",
+      "status": "rejected"
+    },
+    {
+      "mutation": "out-of-range-location",
+      "obligation": "index bounds",
+      "reason": "frontier row index",
+      "status": "rejected"
+    },
+    {
+      "mutation": "noncanonical-pair-order",
+      "obligation": "canonical order",
+      "reason": "non-increasing frontier gas",
+      "status": "rejected"
+    },
+    {
+      "mutation": "missing-nondominated-pair",
+      "obligation": "exact recurrence",
+      "reason": "invalid exact frontier recurrence",
+      "status": "rejected"
+    },
+    {
+      "mutation": "altered-frontier-cost",
+      "obligation": "exact recurrence",
+      "reason": "invalid exact frontier recurrence",
+      "status": "rejected"
+    },
+    {
+      "mutation": "duplicate-frontier-gas",
+      "obligation": "canonical order",
+      "reason": "non-increasing frontier gas",
+      "status": "rejected"
+    },
+    {
+      "mutation": "negative-frontier-cost",
+      "obligation": "resource domain",
+      "reason": "frontier resource",
+      "status": "rejected"
+    },
+    {
+      "mutation": "missing-reachable-witness",
+      "obligation": "witness existence",
+      "reason": "reachable exact frontier lacks replayable witness",
+      "status": "rejected"
+    },
+    {
+      "mutation": "altered-witness-cost",
+      "obligation": "witness accounting",
+      "reason": "witness resource mismatch",
+      "status": "rejected"
+    },
+    {
+      "mutation": "altered-witness-gas",
+      "obligation": "witness accounting",
+      "reason": "witness resource mismatch",
+      "status": "rejected"
+    },
+    {
+      "mutation": "unknown-witness-edge",
+      "obligation": "witness replay",
+      "reason": "unknown witness edge",
+      "status": "rejected"
+    },
+    {
+      "mutation": "truncated-witness-values",
+      "obligation": "witness grammar",
+      "reason": "witness values",
+      "status": "rejected"
+    },
+    {
+      "mutation": "wrong-witness-step-count",
+      "obligation": "witness accounting",
+      "reason": "witness steps",
+      "status": "rejected"
+    },
+    {
+      "mutation": "wrong-witness-initial",
+      "obligation": "witness initial",
+      "reason": "witness initial",
+      "status": "rejected"
+    },
+    {
+      "mutation": "changed-input-edge",
+      "obligation": "query binding",
+      "reason": "certificate/query mismatch",
+      "status": "rejected"
+    },
+    {
+      "mutation": "forged-safe-witness",
+      "obligation": "witness replay",
+      "reason": "witness does not reach error",
+      "status": "rejected"
+    }
+  ],
+  "valid_certificate_status": "optimal_bounded"
+}

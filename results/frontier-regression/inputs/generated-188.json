@@ -1,0 +1,1 @@
+{"bits":2,"edges":[{"cost":2,"dst":"q1","gas":0,"guard":[1,1],"id":0,"src":"q1","update":[2,0]},{"cost":1,"dst":"q0","gas":1,"guard":[0,0],"id":1,"src":"q1","update":[2,3]},{"cost":1,"dst":"q0","gas":0,"guard":[0,2],"id":2,"src":"q0","update":[2,-3]}],"errors":["q2"],"gas":2,"id":"generated-188","initial":[2,3],"locations":["q0","q1","q2"],"start":"q0","steps":3}

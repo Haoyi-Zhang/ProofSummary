@@ -1,0 +1,180 @@
+{
+  "base_valid": true,
+  "hard_rejections": 41,
+  "mutations": [
+    {
+      "diagnostic": "unsupported schema",
+      "name": "unsupported-schema"
+    },
+    {
+      "diagnostic": "certificate key mismatch: missing=[], extra=['surprise']",
+      "name": "extra-top-level-key"
+    },
+    {
+      "diagnostic": "certificate key mismatch: missing=['claims'], extra=[]",
+      "name": "missing-top-level-key"
+    },
+    {
+      "diagnostic": "concrete.states contains duplicates",
+      "name": "duplicate-concrete-state"
+    },
+    {
+      "diagnostic": "concrete.initial invalid",
+      "name": "invalid-concrete-initial"
+    },
+    {
+      "diagnostic": "concrete.errors invalid",
+      "name": "invalid-concrete-error"
+    },
+    {
+      "diagnostic": "concrete.errors contains duplicates",
+      "name": "duplicate-concrete-error"
+    },
+    {
+      "diagnostic": "concrete.edges[1].id invalid or duplicate",
+      "name": "duplicate-edge-id"
+    },
+    {
+      "diagnostic": "concrete.edges[0] endpoint invalid",
+      "name": "invalid-edge-source"
+    },
+    {
+      "diagnostic": "edge.gas must be a non-negative integer and not bool",
+      "name": "boolean-edge-gas"
+    },
+    {
+      "diagnostic": "edge.cost must be a non-negative integer and not bool",
+      "name": "negative-edge-cost"
+    },
+    {
+      "diagnostic": "concrete.horizon must be a non-negative integer and not bool",
+      "name": "boolean-horizon"
+    },
+    {
+      "diagnostic": "concrete/abstract resource bounds differ",
+      "name": "resource-bound-mismatch"
+    },
+    {
+      "diagnostic": "alpha is not total and exact on concrete states",
+      "name": "alpha-missing-state"
+    },
+    {
+      "diagnostic": "alpha maps outside abstract state set",
+      "name": "alpha-outside-domain"
+    },
+    {
+      "diagnostic": "abstract system contains unreachable/unmapped blocks",
+      "name": "alpha-not-surjective"
+    },
+    {
+      "diagnostic": "initial state is not preserved",
+      "name": "abstract-initial-mismatch"
+    },
+    {
+      "diagnostic": "concrete errors are not covered by abstract errors",
+      "name": "abstract-error-coverage"
+    },
+    {
+      "diagnostic": "uncovered concrete edge: a",
+      "name": "remove-all-abstract-edges"
+    },
+    {
+      "diagnostic": "uncovered concrete edge: a",
+      "name": "break-weighted-coverage"
+    },
+    {
+      "diagnostic": "lower_table has wrong number of layers",
+      "name": "lower-layer-count"
+    },
+    {
+      "diagnostic": "lower_table[0] state keys invalid",
+      "name": "lower-state-key"
+    },
+    {
+      "diagnostic": "lower_table[0][err] width invalid",
+      "name": "lower-row-width"
+    },
+    {
+      "diagnostic": "lower table recurrence mismatch at h=3, state=p0, budget=2",
+      "name": "lower-recurrence-value"
+    },
+    {
+      "diagnostic": "lower_table[0][err][0] must be a non-negative integer and not bool",
+      "name": "lower-boolean-value"
+    },
+    {
+      "diagnostic": "witness references unknown edge ghost",
+      "name": "unknown-witness-edge"
+    },
+    {
+      "diagnostic": "witness cost mismatch",
+      "name": "witness-cost-mismatch"
+    },
+    {
+      "diagnostic": "witness gas mismatch",
+      "name": "witness-gas-mismatch"
+    },
+    {
+      "diagnostic": "witness step count mismatch",
+      "name": "witness-step-mismatch"
+    },
+    {
+      "diagnostic": "witness budget mismatch",
+      "name": "witness-budget-mismatch"
+    },
+    {
+      "diagnostic": "witness does not end in an error state",
+      "name": "witness-truncation"
+    },
+    {
+      "diagnostic": "claim mismatch at budget 0",
+      "name": "claim-status"
+    },
+    {
+      "diagnostic": "claim mismatch at budget 0",
+      "name": "claim-lower"
+    },
+    {
+      "diagnostic": "claim mismatch at budget 0",
+      "name": "claim-upper"
+    },
+    {
+      "diagnostic": "budget key set invalid",
+      "name": "missing-budget-claim"
+    },
+    {
+      "diagnostic": "budget key set invalid",
+      "name": "extra-budget-claim"
+    },
+    {
+      "diagnostic": "budget key set invalid",
+      "name": "extra-budget-witness"
+    },
+    {
+      "diagnostic": "duplicate JSON key: schema",
+      "name": "duplicate-json-key"
+    },
+    {
+      "diagnostic": "invalid constant NaN",
+      "name": "nan-json"
+    },
+    {
+      "diagnostic": "invalid JSON: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte",
+      "name": "invalid-utf8"
+    },
+    {
+      "diagnostic": "invalid JSON: Expecting value: line 1 column 11 (char 10)",
+      "name": "truncated-json"
+    }
+  ],
+  "safe_downgrade": {
+    "accepted": true,
+    "gap_budgets": [
+      0,
+      2
+    ],
+    "meaning": "sound lower bound accepted; exactness withheld until a matching witness closes the gap"
+  },
+  "schema": "pcrh-mutation-summary-v1",
+  "status": "pass"
+}

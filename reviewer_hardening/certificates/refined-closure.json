@@ -1,0 +1,162 @@
+{
+  "abstraction": {
+    "alpha": {
+      "err": "err",
+      "p0:0": "p0:0",
+      "p0:1": "p0:1",
+      "p1:0": "p1",
+      "p1:1": "p1"
+    },
+    "name": "middle",
+    "simulation_obligation": "each concrete edge is covered by an abstract edge with no larger gas or cost",
+    "system": {
+      "edges": [
+        {
+          "cost": 3,
+          "dst": "p1",
+          "gas": 0,
+          "id": "abs::e02",
+          "src": "p0:0"
+        },
+        {
+          "cost": 2,
+          "dst": "err",
+          "gas": 1,
+          "id": "abs::e04",
+          "src": "p1"
+        }
+      ],
+      "errors": [
+        "err"
+      ],
+      "gas_bound": 1,
+      "horizon": 2,
+      "initial": "p0:1",
+      "states": [
+        "err",
+        "p0:0",
+        "p0:1",
+        "p1"
+      ]
+    }
+  },
+  "claims": {
+    "0": {
+      "lower": "INF",
+      "status": "safe",
+      "upper": "INF"
+    },
+    "1": {
+      "lower": "INF",
+      "status": "safe",
+      "upper": "INF"
+    }
+  },
+  "concrete": {
+    "edges": [
+      {
+        "cost": 3,
+        "dst": "p1:0",
+        "gas": 0,
+        "id": "e02",
+        "src": "p0:0"
+      },
+      {
+        "cost": 2,
+        "dst": "err",
+        "gas": 1,
+        "id": "e04",
+        "src": "p1:0"
+      }
+    ],
+    "errors": [
+      "err"
+    ],
+    "gas_bound": 1,
+    "horizon": 2,
+    "initial": "p0:1",
+    "states": [
+      "p0:0",
+      "p0:1",
+      "p1:0",
+      "p1:1",
+      "err"
+    ]
+  },
+  "lower_table": [
+    {
+      "err": [
+        0,
+        0
+      ],
+      "p0:0": [
+        "INF",
+        "INF"
+      ],
+      "p0:1": [
+        "INF",
+        "INF"
+      ],
+      "p1": [
+        "INF",
+        "INF"
+      ]
+    },
+    {
+      "err": [
+        0,
+        0
+      ],
+      "p0:0": [
+        "INF",
+        "INF"
+      ],
+      "p0:1": [
+        "INF",
+        "INF"
+      ],
+      "p1": [
+        "INF",
+        2
+      ]
+    },
+    {
+      "err": [
+        0,
+        0
+      ],
+      "p0:0": [
+        "INF",
+        5
+      ],
+      "p0:1": [
+        "INF",
+        "INF"
+      ],
+      "p1": [
+        "INF",
+        2
+      ]
+    }
+  ],
+  "producer_contract": {
+    "concrete_exact_dp_used_by_producer": false,
+    "lower": "abstract quotient dynamic program",
+    "upper": "concrete A* using only the checked abstract lower table"
+  },
+  "schema": "pcrh-sandwich-certificate-v1",
+  "semantics": {
+    "budget": "sum(edge.gas) <= query budget",
+    "objective": "minimum non-negative path cost to any error state",
+    "path_length": "at most horizon edges"
+  },
+  "untrusted_metrics": {
+    "0": {
+      "astar_expansions": 0
+    },
+    "1": {
+      "astar_expansions": 0
+    }
+  },
+  "witnesses": {}
+}

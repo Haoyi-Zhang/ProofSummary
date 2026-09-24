@@ -1,0 +1,15 @@
+id,group,gas,steps,theoretical_dense_cells,frontier_rows,frontier_points,max_frontier_width,frontier_candidates,dense_status,oracle_status,oracle_prefixes
+tradeoff-8,linear-width-worst-case,8,8,1458,162,330,9,480,optimal_bounded,optimal_bounded,511
+tradeoff-16,linear-width-worst-case,16,16,9826,578,1938,17,3264,optimal_bounded,optimal_bounded,131071
+tradeoff-24,linear-width-worst-case,24,24,31250,1250,5850,25,10400,optimal_bounded,unknown,200000
+tradeoff-32,linear-width-worst-case,32,32,71874,2178,13090,33,23936,optimal_bounded,unknown,200000
+dominated-8,exponential-traces-collapsed,8,8,1458,162,90,1,144,optimal_bounded,optimal_bounded,511
+dominated-16,exponential-traces-collapsed,16,16,9826,578,306,1,544,optimal_bounded,optimal_bounded,131071
+dominated-24,exponential-traces-collapsed,24,24,31250,1250,650,1,1200,optimal_bounded,unknown,200000
+dominated-32,exponential-traces-collapsed,32,32,71874,2178,1122,1,2112,optimal_bounded,unknown,200000
+single-32-g1000000,large-gas-single-frontier,1000000,32,2178002178,2178,1122,1,1056,unknown,optimal_bounded,33
+single-64-g1000000,large-gas-single-frontier,1000000,64,8450008450,8450,4290,1,4160,unknown,optimal_bounded,65
+single-96-g1000000,large-gas-single-frontier,1000000,96,18818018818,18818,9506,1,9312,unknown,optimal_bounded,97
+single-127-g1000000,large-gas-single-frontier,1000000,127,32768032768,32768,16512,1,16256,unknown,optimal_bounded,128
+mixed-havoc-frontier,mixed-semantics,3,4,640,160,170,3,280,optimal_bounded,optimal_bounded,136
+safe-large-gas,large-gas-safe,1000000,128,516000516,516,258,1,0,unknown,safe_bounded,129

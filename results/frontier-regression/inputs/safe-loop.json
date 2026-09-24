@@ -1,0 +1,1 @@
+{"bits":1,"edges":[{"cost":0,"dst":"s","gas":0,"guard":[0,1],"id":0,"src":"s","update":[1,0]}],"errors":["z"],"gas":0,"id":"safe-loop","initial":[0],"locations":["s","z"],"start":"s","steps":5}

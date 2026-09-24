@@ -1,0 +1,7 @@
+file,expected_unreach_call,abstraction_variable,quotient_classes,source_url
+simple_1-1.c,false,x parity,even|odd,https://github.com/sosy-lab/sv-benchmarks/blob/master/c/loop-acceleration/simple_1-1.c
+simple_1-2.c,true,x parity,even|odd,https://github.com/sosy-lab/sv-benchmarks/blob/master/c/loop-acceleration/simple_1-2.c
+simple_2-1.c,true,post-loop comparison,x<=T|x>T,https://github.com/sosy-lab/sv-benchmarks/blob/master/c/loop-acceleration/simple_2-1.c
+simple_2-2.c,false,post-loop comparison,x<=T|x>T,https://github.com/sosy-lab/sv-benchmarks/blob/master/c/loop-acceleration/simple_2-2.c
+simple_3-1.c,false,x parity,even|odd,https://github.com/sosy-lab/sv-benchmarks/blob/master/c/loop-acceleration/simple_3-1.c
+simple_3-2.c,true,x parity,even|odd,https://github.com/sosy-lab/sv-benchmarks/blob/master/c/loop-acceleration/simple_3-2.c

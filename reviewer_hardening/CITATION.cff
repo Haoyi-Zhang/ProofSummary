@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Please cite the accompanying paper when using this artifact."
+title: "Reviewer-hardening supplement for Budget-Parametric Proof-Carrying Minimal Refutations"
+type: software
+authors:
+  - family-names: Zhang
+    given-names: Haoyi
+  - family-names: Ran
+    given-names: Huaijin
+version: 1.0.0
+date-released: 2026-09-20
+license: MIT

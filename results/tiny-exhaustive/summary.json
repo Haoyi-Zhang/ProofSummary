@@ -1,0 +1,20 @@
+{
+  "agreements": 42372,
+  "cases": 42372,
+  "cpu_seconds": 5.146988212,
+  "disagreements": 0,
+  "edge_sets": 1177,
+  "edge_templates": 48,
+  "failures": [],
+  "finite_check_not_general_proof": true,
+  "max_frontier_width": 2,
+  "max_oracle_prefixes": 30,
+  "optimal_bounded": 17210,
+  "peak_rss_kib": 93232,
+  "safe_bounded": 25162,
+  "status": "exhaustive_micro_validation_passed",
+  "strata": 36,
+  "total_candidate_pairs": 94848,
+  "total_frontier_points": 274788,
+  "workers": 1
+}

@@ -1,0 +1,8 @@
+{
+  "budget_queries": 29887,
+  "gap_results": 4745,
+  "schema": "pcrh-fuzz-summary-v1",
+  "seed": 9302026,
+  "status": "pass",
+  "systems": 10000
+}

@@ -1,0 +1,1 @@
+{"bits": 1, "edges": [{"cost": 7, "dst": "z", "gas": 0, "guard": [0, 0], "id": 0, "src": "s", "update": [1, 0]}, {"cost": 2, "dst": "z", "gas": 0, "guard": [1, 1], "id": 1, "src": "s", "update": [1, 0]}], "errors": ["z"], "gas": 0, "id": "multiple-initials", "initial": [0, 1], "locations": ["s", "z"], "start": "s", "steps": 1}

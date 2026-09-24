@@ -1,0 +1,1 @@
+{"query":{"bits":1,"edges":[],"errors":["z"],"gas":0,"id":"initial-error","initial":[0],"locations":["z"],"start":"z","steps":0},"witness":{"initial":0,"edges":[],"values":[0],"steps":0,"gas":0,"cost":0},"frontiers":[[0,0,0,[[0,0]]],[0,1,0,[[0,0]]]]}

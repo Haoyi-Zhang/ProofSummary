@@ -1,0 +1,1 @@
+{"bits": 1, "edges": [{"cost": 1, "dst": "assert", "gas": 1, "guard": [0, 1], "id": 0, "src": "entry", "update": [1, 0]}, {"cost": 0, "dst": "error", "gas": 0, "guard": [0, 0], "id": 1, "src": "assert", "update": [1, 0]}], "errors": ["error"], "gas": 1, "id": "svcomp-simple_2-2", "initial": [0, 1], "locations": ["entry", "assert", "error"], "start": "entry", "steps": 2}

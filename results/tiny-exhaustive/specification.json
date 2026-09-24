@@ -1,0 +1,68 @@
+{
+  "bits": 1,
+  "destinations": [
+    "s",
+    "z"
+  ],
+  "edge_set_cardinalities": [
+    0,
+    1,
+    2
+  ],
+  "edge_sets": 1177,
+  "edge_templates": 48,
+  "error": "z",
+  "gas_caps": [
+    0,
+    1,
+    2
+  ],
+  "guard_update_labels": [
+    "full-id",
+    "full-flip",
+    "zero-id",
+    "zero-flip",
+    "one-id",
+    "one-flip"
+  ],
+  "initial_sets": [
+    [
+      0
+    ],
+    [
+      1
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "locations": [
+    "s",
+    "z"
+  ],
+  "resource_pairs": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "step_caps": [
+    0,
+    1,
+    2,
+    3
+  ]
+}

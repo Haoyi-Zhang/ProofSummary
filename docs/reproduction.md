@@ -1,0 +1,127 @@
+# Reproduction contract
+
+## Prerequisites
+
+- Linux/Unix;
+- Python 3.10 or later;
+- Python standard library only;
+- a fresh writable output path;
+- no network, package installation, solver, GPU, model API, private data, or
+  manuscript checkout.
+
+The runner uses `resource.setrlimit`, so Windows is not a supported clean-run
+environment without replacing that guard.
+
+## Full command
+
+From the standalone repository root:
+
+```sh
+python reproduce.py --out /tmp/pmr-reproduction
+```
+
+The output path must not exist. The refusal to overwrite avoids mixing old and
+new evidence.
+
+## Sequence executed
+
+1. `python -m unittest discover -s tests -v` (71 test methods).
+2. Replay `interval-pilot`, `main`, `family`, and `boundary` dense phases.
+3. Compare each dense phase's input, certificate, detail JSON, and every
+   deterministic `raw.csv` field.
+4. Replay `frontier-regression` and `frontier-stress`.
+5. Compare every frontier input, certificate, detail JSON, and deterministic
+   CSV field.
+6. Replay the six `public-summary-cases` and compare all retained evidence.
+7. Regenerate the 21-case mutation study and compare the complete summary.
+8. Re-enumerate all 42,372 micro-language queries; compare the semantic/count
+   summary after removing CPU/RSS and compare the exact specification and
+   stratum table bytes.
+9. Regenerate the dense and frontier aggregate reports.
+10. Write `reproduction.json`.
+
+Each child receives a 180 s CPU/wall guard and 2.5 GiB address-space guard. The
+controller uses one worker. The scientific scripts also enforce their own
+product/row/candidate/prefix/file caps.
+
+## Equality definition
+
+Required equality includes:
+
+- input selection and identifiers;
+- decoded query JSON;
+- decoded certificate JSON;
+- decoded detailed result JSON;
+- result status, optimum/safety, witness resources, frontier points and widths,
+  candidate/work counts, oracle/dense completion flags, mutation outcomes, and
+  exhaustive stratum totals; and
+- aggregate integer counts.
+
+CPU time and peak RSS are not required to match because they depend on the
+machine and process environment. Their measured values remain in the new run's
+report.
+
+## Success meaning
+
+A successful `reproduction.json` has:
+
+```json
+{
+  "status": "semantic_reproduction_passed",
+  "cases": 661,
+  "frontier_cases": 675,
+  "public_cases": 6,
+  "mutation_cases": 21,
+  "exhaustive_micro_cases": 42372,
+  "unit_test_suite_passed": true,
+  "exact_json_evidence_equal": true,
+  "deterministic_count_fields_equal": true,
+  "workers": 1
+}
+```
+
+This establishes reproducibility of the retained finite computations and
+artifacts. It does not establish that the Python checker is formally verified,
+that the mathematical proofs have been independently audited, that the result
+is novel, or that a journal will accept the paper.
+
+## Focused commands
+
+Tests only:
+
+```sh
+python -m unittest discover -s tests -v
+```
+
+One frontier certificate:
+
+```sh
+python src/frontier_checker.py \
+  results/frontier-stress/inputs/tradeoff-8.json \
+  results/frontier-stress/certificates/tradeoff-8.json
+```
+
+One legacy dense certificate through both checkers:
+
+```sh
+python src/checker.py \
+  results/interval-pilot/inputs/gas-erasure.json \
+  results/interval-pilot/certificates/gas-erasure.json
+python src/interval_checker.py \
+  results/interval-pilot/inputs/gas-erasure.json \
+  results/interval-pilot/certificates/gas-erasure.json
+```
+
+Reconcile retained dense results without rerunning solvers:
+
+```sh
+python src/analyze.py --results results --out /tmp/pmr-dense-aggregate
+```
+
+Reconcile retained frontier results:
+
+```sh
+python src/frontier_analyze.py --results results --out /tmp/pmr-frontier-aggregate
+```
+
+These analysis-only commands are not substitutes for `reproduce.py`.

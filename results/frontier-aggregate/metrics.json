@@ -1,0 +1,84 @@
+{
+  "cases": 675,
+  "dominated_widths": [
+    [
+      8,
+      1
+    ],
+    [
+      16,
+      1
+    ],
+    [
+      24,
+      1
+    ],
+    [
+      32,
+      1
+    ]
+  ],
+  "large_gas_cases": [
+    "single-32-g1000000",
+    "single-64-g1000000",
+    "single-96-g1000000",
+    "single-127-g1000000",
+    "safe-large-gas"
+  ],
+  "largest_gas_cap": 1000000,
+  "largest_theoretical_dense_cells": 32768032768,
+  "phase_rows": [
+    {
+      "cases": 661,
+      "cpu_seconds": 1.203861637,
+      "dense_cells": 412682,
+      "dense_complete": 661,
+      "frontier_candidates": 20927,
+      "frontier_points": 23926,
+      "optimal": 444,
+      "oracle_complete": 661,
+      "peak_rss_kib": 105220,
+      "phase": "frontier-regression",
+      "safe": 217
+    },
+    {
+      "cases": 14,
+      "cpu_seconds": 2.837748138,
+      "dense_cells": 229456,
+      "dense_complete": 9,
+      "frontier_candidates": 73144,
+      "frontier_points": 55234,
+      "optimal": 13,
+      "oracle_complete": 10,
+      "peak_rss_kib": 112664,
+      "phase": "frontier-stress",
+      "safe": 1
+    }
+  ],
+  "regression_cases": 661,
+  "regression_frontier_candidates": 20927,
+  "regression_frontier_points": 23926,
+  "regression_max_frontier_width": 3,
+  "regression_mismatches": 0,
+  "stress_cases": 14,
+  "stress_dense_unknown": 5,
+  "stress_oracle_unknown": 4,
+  "tradeoff_widths": [
+    [
+      8,
+      9
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      32,
+      33
+    ]
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "agreement": 276,
+  "cases": 276,
+  "cpu_seconds": 0.252883336,
+  "incomplete": 0,
+  "peak_rss_kib": 94800,
+  "phase": "main",
+  "workers": 1
+}

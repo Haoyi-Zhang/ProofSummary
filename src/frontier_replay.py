@@ -18,7 +18,7 @@ def main() -> int:
     args = parser.parse_args()
     if args.out.exists():
         raise SystemExit("output directory must not exist")
-    for folder in ("inputs", "certificates", "details"):
+    for folder in ("inputs", "certificates", "dense-certificates", "details"):
         (args.out / folder).mkdir(parents=True, exist_ok=False)
     with (args.source / "raw.csv").open(newline="") as stream:
         selection = list(csv.DictReader(stream))
@@ -46,7 +46,9 @@ def main() -> int:
         "agreement": sum(r["agreement"] == "yes" for r in rows),
         "incomplete": sum(r["agreement"] == "incomplete" for r in rows),
         "oracle_complete": sum(r["oracle_status"] != "unknown" for r in rows),
-        "dense_complete": sum(r["dense_status"] != "unknown" for r in rows),
+        "dense_current_checked": sum(r["dense_evidence"] == "current-independent-dense-checker" for r in rows),
+        "dense_legacy_checked_records": sum(r["dense_evidence"] == "retained-legacy-dense-and-interval-check-record" for r in rows),
+        "dense_unknown": sum(r["dense_status"] == "unknown" for r in rows),
         "cpu_seconds": time.process_time() - started,
         "peak_rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
         "workers": 1,

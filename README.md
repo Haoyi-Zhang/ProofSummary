@@ -24,7 +24,8 @@ stores the canonical nondominated pairs
 of first-error paths. Gas charges are binary. The independent checker binds the
 certificate to the complete supplied query, verifies the total row domain,
 canonical order, exact edge-shifted recurrence, resource caps, and a separately
-replayed canonical witness. An accepted certificate gives the exact least error
+replayed witness for the least `(cost,gas,initial)` outcome. An accepted
+certificate gives the exact least error
 cost, or bounded safety, for every gas budget from zero through the declared
 cap.
 
@@ -47,15 +48,21 @@ safety assertion.
 
 The fixed artifact contains:
 
-- **42,372/42,372** four-way agreements in a completely enumerated micro
-  universe (17,210 bounded-optimal, 25,162 bounded-safe);
-- **661/661** regression agreements across frontier, dense, forward-oracle, and
-  retained prior results (444 optimal, 217 safe);
-- **14/14** frontier stress cases, including tight width, width collapse, havoc,
-  and five gas-cap-1,000,000 systems;
-- **21/21** targeted malformed-certificate mutations rejected;
+- **42,372/42,372** complete micro-language agreements among direct
+  function-level frontier production/checking, dense production/checking, and
+  unpruned forward enumeration (17,210 bounded-optimal, 25,162 bounded-safe);
+- **661/661** current frontier/checker and oracle regression results agreeing
+  with **661 retained** dense/interval checker records from the earlier study
+  (444 optimal, 217 safe); the dense/interval checkers are not rerun in this
+  regression phase;
+- **14/14** current frontier stress cases, with the independent dense checker
+  actually accepting the nine certificates whose dense producer completes and
+  five million-gas dense productions returning `unknown`;
+- a separate bounded byte-consumer study with **12/12** valid encodings accepted
+  and **12/12** duplicate-key, byte-limit, Boolean, or float negatives rejected;
+- **21/21** function-level malformed-certificate mutations rejected;
 - **6/6** exact quotient cases matching retained upstream reachability verdicts;
-- **71** passing unit-test methods; and
+- **87** passing unit-test methods; and
 - the legacy 661-case dense/interval study, including three exact unsoundness
   controls and the 82,176-versus-640 inequality boundary measurement.
 
@@ -80,10 +87,11 @@ From this repository root, choose a destination that does not yet exist:
 python reproduce.py --out /tmp/pmr-reproduction
 ```
 
-The controller refuses to overwrite an existing directory. It runs all 71
+The controller refuses to overwrite an existing directory. It runs all 87
 unit tests and reconstructs the dense phases, frontier regression and stress
-phases, public quotients, mutation study, exhaustive micro universe, and both
-aggregate analyses. It compares every retained input/certificate/detail JSON
+phases, public quotients, function-level mutation study, bounded byte-consumer
+study, exhaustive micro universe, and both aggregate analyses. It compares every
+retained input/certificate/detail JSON
 object and every deterministic CSV/count field. CPU time and peak RSS are
 reported but intentionally excluded from equality checks.
 
@@ -149,13 +157,18 @@ python src/interval_checker.py \
   `frontier_analyze.py` - fixed regression/stress generation, execution,
   replay, and aggregation.
 - `src/tiny_exhaustive.py` - complete enumerator for the declared micro universe.
-- `src/mutation_study.py` - 21 targeted certificate/input corruptions.
+- `src/mutation_study.py` - 21 targeted function-level certificate/input
+  corruptions.
+- `src/consumer_boundary_study.py` - independent canonical serialization and
+  bounded `check_bytes` replay for all three checkers, including duplicate-key,
+  byte-cap, Boolean, and float negatives.
 - `src/public_cases.py`, `public_study.py`, `public_replay.py` - six exact finite
   quotients of retained public loop-acceleration sources.
 - `src/producer.py`, `checker.py`, `interval_checker.py`, `oracle.py` - legacy
   dense/interval reference path.
 - `src/bad_search.py` - deliberately unsound gas/step/value-erasure controls.
-- `tests/` - 71 acceptance, rejection, bound, frontier, and representation tests.
+- `tests/` - 87 acceptance, rejection, type-binding, deadline, byte-boundary,
+  frontier, and representation tests.
 - `results/` - exact inputs, certificates, detailed outcomes, CSV files, and
   aggregate JSON used by the paper.
 - `public/` - exact retained public C source files, metadata, and upstream

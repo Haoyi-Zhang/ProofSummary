@@ -1,11 +1,13 @@
 {
   "agreement": 661,
   "cases": 661,
-  "cpu_seconds": 1.203861637,
-  "dense_complete": 661,
+  "cpu_seconds": 0.7661091240000002,
+  "dense_current_checked": 0,
+  "dense_legacy_checked_records": 661,
+  "dense_unknown": 0,
   "incomplete": 0,
   "oracle_complete": 661,
-  "peak_rss_kib": 105220,
+  "peak_rss_kib": 95160,
   "phase": "regression",
   "workers": 1
 }

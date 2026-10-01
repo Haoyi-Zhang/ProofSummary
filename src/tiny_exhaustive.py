@@ -2,9 +2,11 @@
 
 This is finite meta-validation, not a proof for arbitrary inputs.  The universe
 is defined extensionally by a 48-edge template pool, every edge set of size at
-most two, three initial-value sets, gas caps 0..2, and step caps 0..3.  For each
-query we compare four paths: the budget-parametric producer/checker, the dense
-producer/checker, and a forward trace oracle that uses no dynamic programming.
+most two, three initial-value sets, gas caps 0..2, and step caps 0..3.  For each query we compare three computation families: budget-parametric
+production/checking, dense production/checking, and a forward trace oracle that
+uses no dynamic programming.  These families contain two checker calls; the
+study does not count producer and checker stages as four independent semantic
+implementations.
 Only aggregate and stratum evidence is retained; this module is the exact,
 deterministic input generator.
 """

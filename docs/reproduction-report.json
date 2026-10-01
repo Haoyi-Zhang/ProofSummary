@@ -1,8 +1,11 @@
 {
   "cases": 661,
-  "children_cpu_seconds": 22.720973,
-  "children_peak_rss_kib": 112108,
-  "controller_cpu_seconds": 0.42814279599999994,
+  "children_cpu_seconds": 37.93164,
+  "children_peak_rss_kib": 112220,
+  "consumer_boundary_files": 34,
+  "consumer_boundary_negative_cases": 12,
+  "consumer_boundary_positive_cases": 12,
+  "controller_cpu_seconds": 0.6427856080000001,
   "deterministic_count_fields_equal": true,
   "exact_json_evidence_equal": true,
   "exhaustive_micro_cases": 42372,
@@ -11,6 +14,7 @@
   "public_cases": 6,
   "status": "semantic_reproduction_passed",
   "timing_and_rss_equality_required": false,
+  "unit_test_methods": 87,
   "unit_test_suite_passed": true,
   "workers": 1
 }

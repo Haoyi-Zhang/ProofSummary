@@ -1,11 +1,13 @@
 {
   "agreement": 14,
   "cases": 14,
-  "cpu_seconds": 2.837748138,
-  "dense_complete": 9,
+  "cpu_seconds": 7.488288133,
+  "dense_current_checked": 9,
+  "dense_legacy_checked_records": 0,
+  "dense_unknown": 5,
   "incomplete": 0,
   "oracle_complete": 10,
-  "peak_rss_kib": 112664,
+  "peak_rss_kib": 112904,
   "phase": "stress",
   "workers": 1
 }

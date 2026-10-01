@@ -18,6 +18,7 @@ INF=math.inf
 
 
 def relaxation(p: dict[str, Any], budget: Budget) -> dict[tuple[str,int,int], float|int]:
+    budget.check_time()
     a={}
     for h in range(p['steps']+1):
         for g in range(p['gas']+1):
@@ -33,6 +34,8 @@ def relaxation(p: dict[str, Any], budget: Budget) -> dict[tuple[str,int,int], fl
                             budget.tick()
                             vals.append(e['cost']+a[e['dst'],g-e['gas'],h-1])
                     a[q,g,h]=min(vals,default=INF)
+                    budget.check_time()
+    budget.check_time()
     return a
 
 
@@ -51,6 +54,7 @@ def search(p: dict[str, Any], guided: bool=True, *, limit: int=200_000) -> tuple
             heapq.heappush(frontier,(low,0,next(serial),key))
     expanded=0
     while frontier:
+        bound.check_time()
         _,cost,_,key=heapq.heappop(frontier)
         if dist.get(key)!=cost:
             continue
@@ -65,6 +69,7 @@ def search(p: dict[str, Any], guided: bool=True, *, limit: int=200_000) -> tuple
                     break
                 prev,eid=par; edges.append(eid); cur=prev
             states.reverse(); edges.reverse()
+            bound.check_time()
             return {'initial':states[0],'edges':edges,'values':states,'cost':cost},{'expanded':expanded,'relaxation_obligations':guide_work,'work':bound.work}
         if h==0:
             continue
@@ -80,10 +85,12 @@ def search(p: dict[str, Any], guided: bool=True, *, limit: int=200_000) -> tuple
                 continue
             dist[nk]=nc; parent[nk]=(key,e['id'])
             heapq.heappush(frontier,(nc+heuristic,nc,next(serial),nk))
+    bound.check_time()
     return None,{'expanded':expanded,'relaxation_obligations':guide_work,'work':bound.work}
 
 
 def suffixes(p: dict[str, Any], budget: Budget) -> dict[tuple[str,int,int,int],int|float]:
+    budget.check_time()
     b={}
     for h in range(p['steps']+1):
         for g in range(p['gas']+1):
@@ -101,6 +108,8 @@ def suffixes(p: dict[str, Any], budget: Budget) -> dict[tuple[str,int,int,int],i
                                 budget.tick()
                                 best=min(best,e['cost']+b[e['dst'],y,g-e['gas'],h-1])
                         b[key]=best
+                    budget.check_time()
+    budget.check_time()
     return b
 
 
@@ -121,6 +130,7 @@ def produce(p: dict[str, Any]) -> tuple[dict[str,Any],dict[str,Any]]:
                         val=None if vals[start]==INF else vals[start]
                         ranges.append([start,g-1,val]); start=g
                 segments+=len(ranges); rows.append([qi,x,h,ranges])
+    budget.check_time()
     stats.update({'cells':len(b),'segments':segments,'suffix_obligations':budget.work})
     cert={'query':p,'witness':w,'bounds':rows}
     return cert,stats

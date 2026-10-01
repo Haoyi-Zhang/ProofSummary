@@ -25,7 +25,7 @@ new evidence.
 
 ## Sequence executed
 
-1. `python -m unittest discover -s tests -v` (71 test methods).
+1. `python -m unittest discover -s tests -v` (87 test methods).
 2. Replay `interval-pilot`, `main`, `family`, and `boundary` dense phases.
 3. Compare each dense phase's input, certificate, detail JSON, and every
    deterministic `raw.csv` field.
@@ -33,12 +33,17 @@ new evidence.
 5. Compare every frontier input, certificate, detail JSON, and deterministic
    CSV field.
 6. Replay the six `public-summary-cases` and compare all retained evidence.
-7. Regenerate the 21-case mutation study and compare the complete summary.
-8. Re-enumerate all 42,372 micro-language queries; compare the semantic/count
+7. Regenerate the 21-case function-level mutation study and compare the
+   complete summary.
+8. Regenerate the separate bounded byte-consumer study: independently
+   serialize representative queries/certificates, invoke each checker's
+   duplicate-key-rejecting, length-bounded `check_bytes` entry, and compare all
+   positive/negative records and bytes.
+9. Re-enumerate all 42,372 micro-language queries; compare the semantic/count
    summary after removing CPU/RSS and compare the exact specification and
    stratum table bytes.
-9. Regenerate the dense and frontier aggregate reports.
-10. Write `reproduction.json`.
+10. Regenerate the dense and frontier aggregate reports.
+11. Write `reproduction.json`.
 
 Each child receives a 180 s CPU/wall guard and 2.5 GiB address-space guard. The
 controller uses one worker. The scientific scripts also enforce their own

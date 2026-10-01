@@ -1,9 +1,9 @@
 """Exact budget-parametric Pareto-frontier certificate producer.
 
 For every control/data state and remaining-step layer, the producer records the
-nondominated pairs (gas consumed, witness cost) of first-error paths.  One
+nondominated pairs (gas consumed, witness cost) of first-error paths. One
 certificate answers every gas query from zero through the declared cap without
-expanding a gas dimension.  The independent checker does not import this file.
+expanding a gas dimension. The independent checker does not import this file.
 """
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import argparse
 import json
 import time
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 MAX_ROWS = 200_000
 MAX_WORK = 200_000
@@ -27,18 +27,24 @@ class Exhausted(RuntimeError):
 
 
 class WorkBudget:
-    def __init__(self, limit: int = MAX_WORK, seconds: float = 180.0) -> None:
+    def __init__(self, limit: int = MAX_WORK, seconds: float = 180.0,
+                 *, started: float | None = None) -> None:
         self.limit = limit
         self.seconds = seconds
         self.work = 0
-        self.started = time.process_time()
+        self.started = time.process_time() if started is None else started
+
+    def check_time(self) -> None:
+        if time.process_time() - self.started > self.seconds:
+            raise Exhausted("frontier CPU limit")
 
     def tick(self, n: int = 1) -> None:
         self.work += n
         if self.work > self.limit:
             raise Exhausted("frontier candidate limit")
-        if self.work % 128 == 0 and time.process_time() - self.started > self.seconds:
-            raise Exhausted("frontier CPU limit")
+        # Check on every increment; callers also check rows/edges and before return,
+        # so zero-candidate and sub-128-candidate instances cannot bypass the guard.
+        self.check_time()
 
 
 def _integer(value: Any, lo: int, hi: int) -> bool:
@@ -51,7 +57,8 @@ def validate(p: Any) -> None:
         raise Unsupported("unsupported input fields")
     if type(p["id"]) is not str or not 1 <= len(p["id"]) <= 80:
         raise Unsupported("case identifier")
-    if not _integer(p["bits"], 1, 6) or not _integer(p["gas"], 0, MAX_GAS) or not _integer(p["steps"], 0, 128):
+    if (not _integer(p["bits"], 1, 6) or not _integer(p["gas"], 0, MAX_GAS) or
+            not _integer(p["steps"], 0, 128)):
         raise Unsupported("unsupported bit width or bounds")
     locations = p["locations"]
     width = 1 << p["bits"]
@@ -75,7 +82,9 @@ def validate(p: Any) -> None:
         raise Unsupported("edge cap")
     identifiers: list[int] = []
     for edge in p["edges"]:
-        if type(edge) is not dict or set(edge) != {"id", "src", "dst", "guard", "update", "gas", "cost"}:
+        if type(edge) is not dict or set(edge) != {
+            "id", "src", "dst", "guard", "update", "gas", "cost"
+        }:
             raise Unsupported("edge fields")
         if (not _integer(edge["id"], 0, 1_000_000) or edge["src"] not in locations or
                 edge["dst"] not in locations or not _integer(edge["gas"], 0, 1) or
@@ -83,40 +92,45 @@ def validate(p: Any) -> None:
             raise Unsupported("edge types")
         guard = edge["guard"]
         if (type(guard) is not list or len(guard) != 2 or
-                not all(_integer(v, 0, width - 1) for v in guard) or guard[0] > guard[1]):
+                not all(_integer(value, 0, width - 1) for value in guard) or
+                guard[0] > guard[1]):
             raise Unsupported("guard")
         update = edge["update"]
         if update != "havoc":
             if (type(update) is not list or len(update) != 2 or
-                    not all(_integer(v, -2**31, 2**31 - 1) for v in update)):
+                    not all(_integer(value, -2**31, 2**31 - 1) for value in update)):
                 raise Unsupported("update")
         identifiers.append(edge["id"])
     if len(set(identifiers)) != len(identifiers):
         raise Unsupported("duplicate edge identifier")
 
 
-def successors(p: dict[str, Any], q: str, x: int) -> Iterable[tuple[dict[str, Any], int]]:
+def successors(p: dict[str, Any], q: str, x: int, *, budget: WorkBudget | None = None,
+               counters: dict[str, int] | None = None) -> Iterable[tuple[dict[str, Any], int]]:
     if q in p["errors"]:
         return ()
     width = 1 << p["bits"]
     out: list[tuple[dict[str, Any], int]] = []
     for edge in p["edges"]:
+        if budget is not None:
+            budget.check_time()
+        if counters is not None:
+            counters["edge_guard_checks"] += 1
         if edge["src"] != q or not edge["guard"][0] <= x <= edge["guard"][1]:
             continue
         update = edge["update"]
         values = range(width) if update == "havoc" else ((update[0] * x + update[1]) % width,)
-        out.extend((edge, y) for y in values)
+        for y in values:
+            if budget is not None:
+                budget.check_time()
+            if counters is not None:
+                counters["successor_visits"] += 1
+            out.append((edge, y))
     return out
 
 
 def pareto(pairs: Iterable[tuple[int, int]]) -> tuple[tuple[int, int], ...]:
-    """Canonical componentwise-minimal gas/cost pairs.
-
-    Equal-gas candidates are collapsed to their least cost.  Scanning gas in
-    ascending order retains a point exactly when its cost strictly improves on
-    every smaller-gas point.  The result therefore has increasing gas and
-    strictly decreasing cost.
-    """
+    """Canonical componentwise-minimal gas/cost pairs."""
     by_gas: dict[int, int] = {}
     for gas, cost in pairs:
         current = by_gas.get(gas)
@@ -133,18 +147,27 @@ def pareto(pairs: Iterable[tuple[int, int]]) -> tuple[tuple[int, int], ...]:
 
 
 def compute_frontiers(p: dict[str, Any], *, max_work: int = MAX_WORK,
-                      seconds: float = 180.0) -> tuple[dict[tuple[str, int, int], tuple[tuple[int, int], ...]], dict[str, int]]:
+                      seconds: float = 180.0, started: float | None = None
+                      ) -> tuple[dict[tuple[str, int, int], tuple[tuple[int, int], ...]],
+                                 dict[str, int]]:
     validate(p)
-    budget = WorkBudget(max_work, seconds)
+    budget = WorkBudget(max_work, seconds, started=started)
+    budget.check_time()
     width = 1 << p["bits"]
     gas_cap = p["gas"]
     frontiers: dict[tuple[str, int, int], tuple[tuple[int, int], ...]] = {}
     total_points = 0
     max_points = 0
     candidate_pairs = 0
+    row_visits = 0
+    counters = {"edge_guard_checks": 0, "successor_visits": 0}
+    temporary_candidate_peak = 0
+    temporary_successor_peak = 0
     for h in range(p["steps"] + 1):
         for q in p["locations"]:
             for x in range(width):
+                budget.check_time()
+                row_visits += 1
                 key = (q, x, h)
                 if q in p["errors"]:
                     front = ((0, 0),)
@@ -152,27 +175,40 @@ def compute_frontiers(p: dict[str, Any], *, max_work: int = MAX_WORK,
                     front = ()
                 else:
                     candidates: list[tuple[int, int]] = []
-                    for edge, y in successors(p, q, x):
+                    row_successors = list(successors(p, q, x, budget=budget, counters=counters))
+                    temporary_successor_peak = max(temporary_successor_peak, len(row_successors))
+                    for edge, y in row_successors:
+                        budget.check_time()
                         for gas, cost in frontiers[edge["dst"], y, h - 1]:
                             budget.tick()
                             candidate_pairs += 1
                             shifted_gas = edge["gas"] + gas
                             if shifted_gas <= gas_cap:
                                 candidates.append((shifted_gas, edge["cost"] + cost))
+                    temporary_candidate_peak = max(temporary_candidate_peak, len(candidates))
                     front = pareto(candidates)
                 frontiers[key] = front
                 total_points += len(front)
                 max_points = max(max_points, len(front))
+    budget.check_time()
     return frontiers, {
         "rows": len(frontiers),
+        "row_visits": row_visits,
         "points": total_points,
         "max_points_per_row": max_points,
         "candidate_pairs": candidate_pairs,
+        "edge_guard_checks": counters["edge_guard_checks"],
+        "successor_visits": counters["successor_visits"],
+        "temporary_candidate_peak": temporary_candidate_peak,
+        "temporary_successor_peak": temporary_successor_peak,
+        "input_edge_records": len(p["edges"]),
         "work": budget.work,
     }
 
 
-def _choose_initial(p: dict[str, Any], frontiers: dict[tuple[str, int, int], tuple[tuple[int, int], ...]]) -> tuple[int, tuple[int, int]] | None:
+def _choose_initial(p: dict[str, Any],
+                    frontiers: dict[tuple[str, int, int], tuple[tuple[int, int], ...]]
+                    ) -> tuple[int, tuple[int, int]] | None:
     choices: list[tuple[int, int, int]] = []
     for initial in p["initial"]:
         for gas, cost in frontiers[p["start"], initial, p["steps"]]:
@@ -183,7 +219,11 @@ def _choose_initial(p: dict[str, Any], frontiers: dict[tuple[str, int, int], tup
     return initial, (gas, cost)
 
 
-def extract_witness(p: dict[str, Any], frontiers: dict[tuple[str, int, int], tuple[tuple[int, int], ...]]) -> dict[str, Any] | None:
+def extract_witness(p: dict[str, Any],
+                    frontiers: dict[tuple[str, int, int], tuple[tuple[int, int], ...]],
+                    *, check_time: Callable[[], None] | None = None) -> dict[str, Any] | None:
+    if check_time is not None:
+        check_time()
     chosen = _choose_initial(p, frontiers)
     if chosen is None:
         return None
@@ -195,10 +235,15 @@ def extract_witness(p: dict[str, Any], frontiers: dict[tuple[str, int, int], tup
     edge_ids: list[int] = []
     values: list[int] = [initial]
     while q not in p["errors"]:
+        if check_time is not None:
+            check_time()
         if h == 0:
             raise AssertionError("frontier pair has no derivation")
         found: tuple[dict[str, Any], int] | None = None
-        for edge, y in sorted(successors(p, q, x), key=lambda item: (item[0]["id"], item[1])):
+        options = sorted(successors(p, q, x), key=lambda item: (item[0]["id"], item[1]))
+        for edge, y in options:
+            if check_time is not None:
+                check_time()
             remaining = (gas - edge["gas"], cost - edge["cost"])
             if remaining[0] < 0 or remaining[1] < 0:
                 continue
@@ -213,6 +258,8 @@ def extract_witness(p: dict[str, Any], frontiers: dict[tuple[str, int, int], tup
         gas -= edge["gas"]
         cost -= edge["cost"]
         q, x, h = edge["dst"], y, h - 1
+    if check_time is not None:
+        check_time()
     if (gas, cost) != (0, 0):
         raise AssertionError("witness derivation ended with residual resources")
     return {
@@ -227,13 +274,25 @@ def extract_witness(p: dict[str, Any], frontiers: dict[tuple[str, int, int], tup
 
 def produce(p: dict[str, Any], *, max_work: int = MAX_WORK,
             seconds: float = 180.0) -> tuple[dict[str, Any], dict[str, int]]:
-    frontiers, statistics = compute_frontiers(p, max_work=max_work, seconds=seconds)
+    started = time.process_time()
+
+    def check_time() -> None:
+        if time.process_time() - started > seconds:
+            raise Exhausted("frontier CPU limit")
+
+    check_time()
+    frontiers, statistics = compute_frontiers(
+        p, max_work=max_work, seconds=seconds, started=started
+    )
     rows: list[list[Any]] = []
     for qi, q in enumerate(p["locations"]):
         for x in range(1 << p["bits"]):
             for h in range(p["steps"] + 1):
+                check_time()
                 rows.append([qi, x, h, [[gas, cost] for gas, cost in frontiers[q, x, h]]])
-    certificate = {"query": p, "witness": extract_witness(p, frontiers), "frontiers": rows}
+    witness = extract_witness(p, frontiers, check_time=check_time)
+    check_time()
+    certificate = {"query": p, "witness": witness, "frontiers": rows}
     return certificate, statistics
 
 
@@ -264,7 +323,8 @@ def main() -> int:
         Path(args.output).write_text(json.dumps(certificate, separators=(",", ":")) + "\n")
         print(json.dumps({"result": "certificate_generated", "statistics": statistics}, sort_keys=True))
         return 0
-    except (Unsupported, Exhausted, OSError, ValueError, KeyError, TypeError, RecursionError) as exc:
+    except (Unsupported, Exhausted, OSError, ValueError, KeyError, TypeError,
+            RecursionError) as exc:
         print(json.dumps({"result": "unknown", "reason": str(exc)}, sort_keys=True))
         return 2
 

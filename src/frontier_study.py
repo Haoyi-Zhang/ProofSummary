@@ -16,6 +16,9 @@ import time
 from typing import Any, Iterable
 
 from frontier_cases import stress_cases
+from checker import Limit as DenseCheckLimit
+from checker import Reject as DenseCheckReject
+from checker import check as check_dense
 from frontier_checker import Limit, Reject, check
 from frontier_oracle import enumerate_frontier
 from frontier_producer import Exhausted as FrontierExhausted
@@ -30,12 +33,11 @@ FIELDS = [
     "id", "group", "source_phase", "bits", "locations", "edges", "gas", "steps",
     "theoretical_dense_cells", "status", "cost", "witness_gas", "frontier_rows",
     "frontier_points", "max_frontier_width", "frontier_candidates", "certificate_bytes",
-    "dense_status", "dense_cost", "dense_cells", "dense_certificate_bytes",
+    "dense_evidence", "dense_status", "dense_cost", "dense_cells", "dense_certificate_bytes",
     "oracle_status", "oracle_cost", "oracle_prefixes", "oracle_error_traces",
-    "producer_cpu_s", "checker_cpu_s", "dense_cpu_s", "oracle_cpu_s", "peak_rss_kib",
-    "agreement",
+    "producer_cpu_s", "checker_cpu_s", "dense_producer_cpu_s", "dense_checker_cpu_s",
+    "oracle_cpu_s", "peak_rss_kib", "agreement",
 ]
-
 
 def _blank() -> dict[str, Any]:
     return {key: "" for key in FIELDS}
@@ -78,22 +80,59 @@ def run_one(p: dict[str, Any], group: str, source_phase: str, out: Path,
     row.update(status=checked["status"], cost=checked["upper"], witness_gas=checked["witness_gas"])
 
     dense_result: dict[str, Any]
-    started = time.process_time()
-    try:
-        dense_certificate, dense_stats = produce_dense(p)
-        row["dense_cpu_s"] = time.process_time() - started
-        dense_text = json.dumps(dense_certificate, separators=(",", ":")) + "\n"
+    if legacy is not None:
+        # These fields are retained evidence from the earlier dense study.  This
+        # current frontier run does not regenerate or recheck a dense certificate.
+        legacy_cost = None if legacy["cost"] == "" else int(legacy["cost"])
         row.update(
-            dense_status=("safe_bounded" if dense_certificate["witness"] is None else "optimal_bounded"),
-            dense_cost=(None if dense_certificate["witness"] is None else dense_certificate["witness"]["cost"]),
-            dense_cells=dense_stats["cells"], dense_certificate_bytes=len(dense_text.encode()),
+            dense_evidence="retained-legacy-dense-and-interval-check-record",
+            dense_status=legacy["status"], dense_cost=legacy_cost,
+            dense_cells=int(legacy["cells"]),
+            dense_certificate_bytes=int(legacy["certificate_bytes"]),
         )
-        dense_result = {"status": row["dense_status"], "cost": row["dense_cost"],
-                        "statistics": dense_stats}
-    except (DenseUnsupported, DenseExhausted) as exc:
-        row["dense_cpu_s"] = time.process_time() - started
-        row["dense_status"] = "unknown"
-        dense_result = {"status": "unknown", "reason": str(exc)}
+        dense_result = {
+            "evidence": row["dense_evidence"],
+            "status": legacy["status"],
+            "cost": legacy_cost,
+            "retained_dense_checker_work": int(legacy["checker_work"]),
+            "retained_interval_checker_work": int(legacy["interval_work"]),
+            "source_phase": source_phase,
+            "current_dense_checker_invoked": False,
+        }
+    else:
+        started = time.process_time()
+        try:
+            dense_certificate, dense_stats = produce_dense(p)
+            row["dense_producer_cpu_s"] = time.process_time() - started
+            dense_text = json.dumps(dense_certificate, separators=(",", ":")) + "\n"
+            (out / "dense-certificates" / f"{p['id']}.json").write_text(dense_text)
+            started_check = time.process_time()
+            dense_checked = check_dense(p, dense_certificate)
+            row["dense_checker_cpu_s"] = time.process_time() - started_check
+            row.update(
+                dense_evidence="current-independent-dense-checker",
+                dense_status=dense_checked["status"], dense_cost=dense_checked["upper"],
+                dense_cells=dense_stats["cells"], dense_certificate_bytes=len(dense_text.encode()),
+            )
+            dense_result = {
+                "evidence": row["dense_evidence"],
+                "status": dense_checked["status"],
+                "cost": dense_checked["upper"],
+                "producer_statistics": dense_stats,
+                "checker": dense_checked,
+                "current_dense_checker_invoked": True,
+            }
+        except (DenseUnsupported, DenseExhausted) as exc:
+            row["dense_producer_cpu_s"] = time.process_time() - started
+            row["dense_evidence"] = "current-dense-producer-unknown"
+            row["dense_status"] = "unknown"
+            dense_result = {"evidence": row["dense_evidence"], "status": "unknown",
+                            "reason": str(exc), "current_dense_checker_invoked": False}
+        except (DenseCheckReject, DenseCheckLimit) as exc:
+            row["dense_evidence"] = "current-dense-checker-failed"
+            row["dense_status"] = "unknown"
+            dense_result = {"evidence": row["dense_evidence"], "status": "unknown",
+                            "reason": str(exc), "current_dense_checker_invoked": True}
 
     started = time.process_time()
     oracle = enumerate_frontier(p)
@@ -148,7 +187,7 @@ def regression_selection(root: Path) -> Iterable[tuple[dict[str, Any], str, str,
 def run_phase(phase: str, out: Path, legacy_root: Path) -> dict[str, Any]:
     if out.exists():
         raise ValueError("output directory must not exist")
-    for folder in ("inputs", "certificates", "details"):
+    for folder in ("inputs", "certificates", "dense-certificates", "details"):
         (out / folder).mkdir(parents=True, exist_ok=False)
     if phase == "regression":
         selection = regression_selection(legacy_root)
@@ -172,7 +211,9 @@ def run_phase(phase: str, out: Path, legacy_root: Path) -> dict[str, Any]:
         "agreement": sum(r["agreement"] == "yes" for r in rows),
         "incomplete": sum(r["agreement"] == "incomplete" for r in rows),
         "oracle_complete": sum(r["oracle_status"] != "unknown" for r in rows),
-        "dense_complete": sum(r["dense_status"] != "unknown" for r in rows),
+        "dense_current_checked": sum(r["dense_evidence"] == "current-independent-dense-checker" for r in rows),
+        "dense_legacy_checked_records": sum(r["dense_evidence"] == "retained-legacy-dense-and-interval-check-record" for r in rows),
+        "dense_unknown": sum(r["dense_status"] == "unknown" for r in rows),
         "cpu_seconds": time.process_time() - started,
         "peak_rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
         "workers": 1,

@@ -2,9 +2,10 @@ Electronic supplement description
 
 This directory is also the standalone `proof-carrying-minimal-refutations`
 repository. It contains the finite summary-language inputs, exact Pareto and
-legacy dense certificates, independent checker, producers, forward oracles,
-71 tests, retained raw results, six licensed public-source provenance cases,
-mathematical arguments, ledgers, and the clean reproduction controller.
+legacy dense certificates, independent checkers, producers, forward oracles,
+87 tests, retained raw results, a separate bounded byte-consumer study, six
+licensed public-source provenance cases, mathematical arguments, ledgers, and
+the clean reproduction controller.
 
 No manuscript file, network access, package installation, solver, GPU, model
 API, private data, or external service is required. Run from this directory:

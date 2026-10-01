@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 import interval_checker as checker
 from producer import produce, search
@@ -13,6 +14,14 @@ from model import Unsupported, Exhausted
 from cases import controls
 from bad_search import search_erased
 from oracle import enumerate_traces
+
+
+class _CountingClock:
+    def __init__(self, expire_on=None):
+        self.calls=0; self.expire_on=expire_on
+    def __call__(self):
+        self.calls+=1
+        return 1.0 if self.expire_on is not None and self.calls>=self.expire_on else 0.0
 
 class IntervalCertificateTests(unittest.TestCase):
     def setUp(self):
@@ -72,6 +81,24 @@ class IntervalCertificateTests(unittest.TestCase):
         c=copy.deepcopy(self.c); c['bounds'][0][3][0][2]=True; self.reject(c)
     def test_float_is_not_integer(self):
         c=copy.deepcopy(self.c); c['bounds'][0][3][0][2]=1.0; self.reject(c)
+    def test_query_binding_rejects_bool_in_certificate_bytes(self):
+        c=copy.deepcopy(self.c); c['query']['bits']=True
+        qb=json.dumps(self.p,separators=(',',':')).encode()
+        cb=json.dumps(c,separators=(',',':')).encode()
+        with self.assertRaises(checker.Reject): checker.check_bytes(qb,cb)
+    def test_query_binding_rejects_equal_float_in_certificate_bytes(self):
+        c=copy.deepcopy(self.c); c['query']['gas']=float(self.p['gas'])
+        qb=json.dumps(self.p,separators=(',',':')).encode()
+        cb=json.dumps(c,separators=(',',':')).encode()
+        with self.assertRaises(checker.Reject): checker.check_bytes(qb,cb)
+    def test_interval_checker_deadline_checked_before_sub128_return(self):
+        baseline=checker.check(self.p,self.c)
+        self.assertLess(baseline['interval_obligations'],128)
+        counter=_CountingClock()
+        with patch.object(checker.time,'process_time',counter): checker.check(self.p,self.c,seconds=.5)
+        expiring=_CountingClock(counter.calls)
+        with patch.object(checker.time,'process_time',expiring):
+            with self.assertRaises(checker.Limit): checker.check(self.p,self.c,seconds=.5)
     def test_no_witness_with_weak_bound_unknown(self):
         c=copy.deepcopy(self.c); c['witness']=None
         self.assertEqual(checker.check(self.p,c)['status'],'unknown')

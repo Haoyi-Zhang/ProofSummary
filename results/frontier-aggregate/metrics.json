@@ -30,27 +30,31 @@
   "phase_rows": [
     {
       "cases": 661,
-      "cpu_seconds": 1.203861637,
+      "cpu_seconds": 0.7661091240000002,
       "dense_cells": 412682,
-      "dense_complete": 661,
+      "dense_current_checked": 0,
+      "dense_legacy_checked_records": 661,
+      "dense_unknown": 0,
       "frontier_candidates": 20927,
       "frontier_points": 23926,
       "optimal": 444,
       "oracle_complete": 661,
-      "peak_rss_kib": 105220,
+      "peak_rss_kib": 95160,
       "phase": "frontier-regression",
       "safe": 217
     },
     {
       "cases": 14,
-      "cpu_seconds": 2.837748138,
+      "cpu_seconds": 7.488288133,
       "dense_cells": 229456,
-      "dense_complete": 9,
+      "dense_current_checked": 9,
+      "dense_legacy_checked_records": 0,
+      "dense_unknown": 5,
       "frontier_candidates": 73144,
       "frontier_points": 55234,
       "optimal": 13,
       "oracle_complete": 10,
-      "peak_rss_kib": 112664,
+      "peak_rss_kib": 112904,
       "phase": "frontier-stress",
       "safe": 1
     }

@@ -4,7 +4,7 @@
 
 | Component | Role | Deliberate separation |
 |---|---|---|
-| `src/frontier_producer.py` | Validates supported input, computes exact layer frontiers, extracts canonical witness, writes certificate | Not imported by checker or oracle |
+| `src/frontier_producer.py` | Validates supported input, computes exact layer frontiers, deterministically extracts a witness for the least `(cost,gas,initial)` outcome, writes certificate | Not imported by checker or oracle |
 | `src/frontier_checker.py` | Strictly decodes query/certificate, replays witness, reconstructs every exact recurrence row, interprets initial frontier | Imports no project semantics/producer/Pareto/oracle code |
 | `src/frontier_oracle.py` | Enumerates bounded forward prefixes without dynamic programming or dominance pruning | Own parser/transition path; used only as a small exact oracle |
 | `src/frontier_cases.py` | Deterministic regression conversion and 14 stress systems | Selection logic separated from checking |
@@ -17,7 +17,8 @@
 | Component | Purpose |
 |---|---|
 | `src/tiny_exhaustive.py` | Enumerates the complete declared 42,372-query micro universe and compares frontier, dense, and forward semantics. |
-| `src/mutation_study.py` | Applies 21 targeted corruptions and records the checker's rejection obligation/reason. |
+| `src/mutation_study.py` | Applies 21 targeted function-level corruptions and records the checker's rejection obligation/reason. |
+| `src/consumer_boundary_study.py` | Independently serializes representative query/certificate pairs, invokes all three bounded byte consumers, and records 12 positive plus 12 negative results. |
 | `src/public_cases.py` | Defines six documented exact finite quotients of retained public C cases. |
 | `src/public_study.py`, `src/public_replay.py` | Execute and reproduce the public quotient sanity comparison. |
 
@@ -51,7 +52,10 @@ and dependency path, yet all code remains same-project Python.
 - `tests/test_io_bounds.py`: duplicate keys, byte caps, product/row/work limits,
   and status discipline.
 
-The complete suite has 71 methods. `results/` retains all selected exact inputs
+The complete suite has 87 methods, including type-sensitive embedded-query
+binding, minimum-initial witness ties, duplicate-key and byte-cap rejection, and
+mock-clock deadline checks before zero/sub-128 work returns. `results/` retains
+all selected exact inputs
 and all claim-linked outputs. `results/pilot` is historical feasibility evidence
 and is not double-counted in the 661 regression total.
 
@@ -64,8 +68,9 @@ corresponding executable JSON summaries are retained under
 
 ## Reproduction controller
 
-`reproduce.py` creates a fresh destination, runs the 71 tests, replays four dense
-phases and two frontier phases, public cases, mutations, and exhaustive micro
+`reproduce.py` creates a fresh destination, runs the 87 tests, replays four
+dense phases and two frontier phases, public cases, the 21 function-level
+mutations, the separate bounded byte-consumer study, and exhaustive micro
 validation, then regenerates both aggregate analyses. It compares exact JSON
 objects and all deterministic CSV fields while excluding only CPU and RSS. It
 uses one worker and child resource limits. It does not read `paper/`.

@@ -144,7 +144,8 @@ The checker validates:
 6. exact equality with the independently reconstructed edge-shifted recurrence;
 7. a separately replayed witness when the aggregate initial frontier is
    nonempty; and
-8. equality of witness cost/gas with the deterministic canonical result.
+8. equality of witness cost, gas, and initial value with the lexicographically
+   least initial outcome.
 
 **Checker theorem.** If the checker accepts `safe_bounded`, no first-error path
 exists within the declared step and gas cap. If it accepts `optimal_bounded`,
@@ -174,8 +175,11 @@ lexicographically least triple `(cost,gas,initial)`. For a nonerror chosen row,
 the recurrence theorem guarantees at least one edge/successor pair whose shifted
 successor point derives the chosen point. Repeatedly choose the least edge ID and
 successor value among such derivations. The layer decreases at every step, so
-extraction terminates at an error with residual `(0,0)`. This gives the canonical
-witness used by the producer.
+extraction terminates at an error with residual `(0,0)`. This gives the
+deterministically selected witness used by the fixed producer. The theorem
+requires existence of a witness for the least `(cost,gas,initial)` outcome; it
+does not make the realizing path unique or force every accepted certificate to
+use the producer's row order.
 
 Executable row/candidate/time/file caps qualify only the implementation: a cap
 returns `unknown`; it does not refute mathematical existence.

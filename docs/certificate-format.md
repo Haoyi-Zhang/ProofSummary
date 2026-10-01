@@ -67,10 +67,13 @@ guard, affine/havoc successor, first-error condition, step count, gas sum, and
 cost sum. A witness alone proves only reachability and an upper bound.
 
 When the exact initial frontier is nonempty, the frontier checker requires a
-witness for the canonical lexicographic result: minimum cost, then minimum gas,
-then minimum initial value. This deterministic rule makes retained certificates
-byte-stable after JSON normalization; it is not a claim that other equal-cost
-witnesses are invalid mathematically.
+witness for the lexicographically least result triple: minimum cost, then
+minimum gas, then minimum initial value. This rule fixes the selected outcome,
+not the realizing edge sequence. The fixed producer separately uses
+deterministic row enumeration, edge/successor tie-breaking, and canonical JSON
+serialization; repeated runs of that producer on the same input are byte-stable.
+Checker acceptance does not require every valid certificate to use the
+producer's row order or the same equal-resource path.
 
 ### 2.2 Frontier rows
 

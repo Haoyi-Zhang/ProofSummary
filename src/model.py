@@ -25,12 +25,14 @@ class Budget:
     work: int = 0
     def __post_init__(self) -> None:
         self.started = time.process_time()
+    def check_time(self) -> None:
+        if time.process_time() - self.started > self.seconds:
+            raise Exhausted('CPU limit')
     def tick(self, n: int = 1) -> None:
         self.work += n
         if self.work > self.limit:
             raise Exhausted('candidate/obligation limit')
-        if self.work % 128 == 0 and time.process_time() - self.started > self.seconds:
-            raise Exhausted('CPU limit')
+        self.check_time()
 
 
 def integer(v: Any, lo: int, hi: int) -> bool:

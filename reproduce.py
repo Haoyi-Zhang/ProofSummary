@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 import resource
+import re
 
 ROOT = Path(__file__).resolve().parent
 PHASES = ('interval-pilot', 'main', 'family', 'boundary')
@@ -47,11 +48,27 @@ def compare(source: Path, replay: Path) -> int:
                 continue
             if new[name][key] != value:
                 raise ValueError(f'{name}: changed semantic/count field {key}')
-        for folder in ('inputs', 'certificates', 'details'):
-            a = json.loads((source / folder / (name + '.json')).read_text())
-            b = json.loads((replay / folder / (name + '.json')).read_text())
-            if a != b:
-                raise ValueError(f'{name}: changed {folder} evidence')
+        for folder in ('inputs', 'certificates', 'dense-certificates', 'details'):
+            source_file = source / folder / (name + '.json')
+            replay_file = replay / folder / (name + '.json')
+            if source_file.exists() != replay_file.exists():
+                raise ValueError(f'{name}: changed presence of {folder} evidence')
+            if source_file.exists():
+                a = json.loads(source_file.read_text())
+                b = json.loads(replay_file.read_text())
+                if a != b:
+                    raise ValueError(f'{name}: changed {folder} evidence')
+    return len(old)
+
+
+def compare_tree(source: Path, replay: Path) -> int:
+    old = {p.relative_to(source): p.read_bytes() for p in source.rglob('*') if p.is_file()}
+    new = {p.relative_to(replay): p.read_bytes() for p in replay.rglob('*') if p.is_file()}
+    if old != new:
+        missing = sorted(str(k) for k in old.keys() - new.keys())
+        extra = sorted(str(k) for k in new.keys() - old.keys())
+        changed = sorted(str(k) for k in old.keys() & new.keys() if old[k] != new[k])
+        raise ValueError(f'Changed byte-boundary evidence: missing={missing}, extra={extra}, changed={changed}')
     return len(old)
 
 
@@ -66,6 +83,11 @@ def main() -> int:
     start_children = resource.getrusage(resource.RUSAGE_CHILDREN)
     try:
         invoke(['-m', 'unittest', 'discover', '-s', 'tests', '-v'], out / 'unit-tests.txt')
+        unit_text = (out / 'unit-tests.txt').read_text()
+        match = re.search(r'Ran (\d+) tests?', unit_text)
+        if not match:
+            raise ValueError('Could not recover unit-test count.')
+        unit_tests = int(match.group(1))
         compared = 0
         for phase in PHASES:
             invoke(['src/replay_study.py', '--source', str(ROOT / 'results' / phase),
@@ -80,8 +102,13 @@ def main() -> int:
                 '--out', str(out / 'public-summary-cases')], out / 'public-summary-cases.txt')
         public_compared = compare(ROOT / 'results' / 'public-summary-cases', out / 'public-summary-cases')
         invoke(['src/mutation_study.py', '--out', str(out / 'frontier-mutations')], out / 'frontier-mutations.txt')
-        if json.loads((ROOT / 'results' / 'frontier-mutations' / 'summary.json').read_text()) != json.loads((out / 'frontier-mutations' / 'summary.json').read_text()):
+        retained_mutations = json.loads((ROOT / 'results' / 'frontier-mutations' / 'summary.json').read_text())
+        replay_mutations = json.loads((out / 'frontier-mutations' / 'summary.json').read_text())
+        if retained_mutations != replay_mutations:
             raise ValueError('Mutation-study evidence changed.')
+        invoke(['src/consumer_boundary_study.py', '--out', str(out / 'consumer-boundary')], out / 'consumer-boundary.txt')
+        consumer_files = compare_tree(ROOT / 'results' / 'consumer-boundary', out / 'consumer-boundary')
+        consumer_summary = json.loads((out / 'consumer-boundary' / 'summary.json').read_text())
         invoke(['src/tiny_exhaustive.py', '--out', str(out / 'tiny-exhaustive')], out / 'tiny-exhaustive.txt')
         retained_tiny = json.loads((ROOT / 'results' / 'tiny-exhaustive' / 'summary.json').read_text())
         replay_tiny = json.loads((out / 'tiny-exhaustive' / 'summary.json').read_text())
@@ -96,7 +123,10 @@ def main() -> int:
         invoke(['src/analyze.py', '--results', str(out), '--out', str(out / 'aggregate')], out / 'analysis.txt')
         invoke(['src/frontier_analyze.py', '--results', str(out), '--out', str(out / 'frontier-aggregate')], out / 'frontier-analysis.txt')
         end_children = resource.getrusage(resource.RUSAGE_CHILDREN)
-        report = {'status': 'semantic_reproduction_passed', 'cases': compared, 'frontier_cases': frontier_compared, 'public_cases': public_compared, 'mutation_cases': 21, 'exhaustive_micro_cases': tiny_cases,
+        report = {'status': 'semantic_reproduction_passed', 'cases': compared, 'frontier_cases': frontier_compared, 'public_cases': public_compared,
+                  'mutation_cases': replay_mutations['mutations'], 'consumer_boundary_positive_cases': consumer_summary['positive_cases'],
+                  'consumer_boundary_negative_cases': consumer_summary['negative_cases'], 'consumer_boundary_files': consumer_files,
+                  'exhaustive_micro_cases': tiny_cases, 'unit_test_methods': unit_tests,
                   'unit_test_suite_passed': True, 'exact_json_evidence_equal': True,
                   'deterministic_count_fields_equal': True,
                   'timing_and_rss_equality_required': False, 'workers': 1,

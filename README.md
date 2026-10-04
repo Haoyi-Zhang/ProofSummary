@@ -197,10 +197,6 @@ is the finite all-budget certificate/checker interface and its proved binary-gas
 size boundary, not the invention of independent optimality certification or
 Pareto dynamic programming.
 
-The research design, literature screening, proofs, code, tests, experiments,
-analysis, validation, and writing used substantive OpenAI GPT-5.6 Sol Pro
-assistance. Human authors remain responsible for verification, intellectual
-contribution, authorship, policy compliance, and any external use.
 
 ## License
 

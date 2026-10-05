@@ -6,7 +6,8 @@
   ],
   "function_level_studies_relabelled": false,
   "negative_cases": 12,
-  "negative_rejected": 12,
+  "negative_rejected": 9,
+  "negative_unknown": 3,
   "negative_results": [
     {
       "certificate_sha256": "1484ab018c31336a9b6287b2437793808996cf7f6c27e881c95dfe3ccbceab4e",
@@ -26,7 +27,7 @@
       "negative": "byte-cap",
       "query_sha256": "c653b8d619583792e44518ae996fd395b231c1837b6209a4679e8641f08d2385",
       "reason": "file byte cap",
-      "status": "rejected"
+      "status": "unknown"
     },
     {
       "certificate_sha256": "964367dc18266b0ce34ae745f8bbc63be22ac763af7b8993f4453ebfffa5e930",
@@ -66,7 +67,7 @@
       "negative": "byte-cap",
       "query_sha256": "b323f359b8a0ea2a23bb768d820cd089cdcb9634a0c7d1984966ec3faafa103c",
       "reason": "file byte cap",
-      "status": "rejected"
+      "status": "unknown"
     },
     {
       "certificate_sha256": "08efb85145a98a14f4821752906ad03cce16eafd88fa55619f911228f6af1c22",
@@ -106,7 +107,7 @@
       "negative": "byte-cap",
       "query_sha256": "b323f359b8a0ea2a23bb768d820cd089cdcb9634a0c7d1984966ec3faafa103c",
       "reason": "file byte cap",
-      "status": "rejected"
+      "status": "unknown"
     },
     {
       "certificate_sha256": "08efb85145a98a14f4821752906ad03cce16eafd88fa55619f911228f6af1c22",

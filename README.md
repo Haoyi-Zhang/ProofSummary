@@ -58,8 +58,8 @@ The fixed artifact contains:
 - **14/14** current frontier stress cases, with the independent dense checker
   actually accepting the nine certificates whose dense producer completes and
   five million-gas dense productions returning `unknown`;
-- a separate bounded byte-consumer study with **12/12** valid encodings accepted
-  and **12/12** duplicate-key, byte-limit, Boolean, or float negatives rejected;
+- a separate bounded byte-consumer study with **12/12** valid encodings accepted,
+  nine duplicate-key/type-binding rejections and three byte-cap unknowns;
 - **21/21** function-level malformed-certificate mutations rejected;
 - **6/6** exact quotient cases matching retained upstream reachability verdicts;
 - **87** passing unit-test methods; and

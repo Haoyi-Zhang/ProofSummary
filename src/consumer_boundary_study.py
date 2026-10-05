@@ -157,9 +157,12 @@ def run(out: Path) -> dict[str, Any]:
                 consumer(query_bytes, raw, max_bytes=cap)
                 observed = "accepted"
                 reason = ""
-            except (frontier_checker.Reject, frontier_checker.Limit,
-                    dense_checker.Reject, dense_checker.Limit,
-                    interval_checker.Reject, interval_checker.Limit,
+            except (frontier_checker.Limit, dense_checker.Limit,
+                    interval_checker.Limit) as exc:
+                observed = "unknown"
+                reason = str(exc)
+            except (frontier_checker.Reject, dense_checker.Reject,
+                    interval_checker.Reject,
                     ValueError, TypeError, UnicodeDecodeError) as exc:
                 observed = "rejected"
                 reason = str(exc)
@@ -174,8 +177,9 @@ def run(out: Path) -> dict[str, Any]:
                 "max_bytes": cap,
             })
 
-    if any(item["status"] != "rejected" for item in negatives):
-        raise AssertionError("consumer negative accepted")
+    if any(item["status"] != ("unknown" if item["negative"] == "byte-cap"
+                              else "rejected") for item in negatives):
+        raise AssertionError("unexpected consumer negative outcome")
 
     summary = {
         "scope": "representative byte-boundary replay separate from function-level studies",
@@ -183,7 +187,8 @@ def run(out: Path) -> dict[str, Any]:
         "positive_cases": len(positives),
         "positive_accepted": len(positives),
         "negative_cases": len(negatives),
-        "negative_rejected": len(negatives),
+        "negative_rejected": sum(item["status"] == "rejected" for item in negatives),
+        "negative_unknown": sum(item["status"] == "unknown" for item in negatives),
         "checkers": sorted(exemplars),
         "positive_results": positives,
         "negative_results": negatives,
@@ -202,7 +207,8 @@ def main() -> int:
         print(json.dumps({"status": "failed", "reason": str(exc)}, sort_keys=True))
         return 1
     print(json.dumps({key: summary[key] for key in (
-        "positive_cases", "positive_accepted", "negative_cases", "negative_rejected"
+        "positive_cases", "positive_accepted", "negative_cases", "negative_rejected",
+        "negative_unknown"
     )}, sort_keys=True))
     return 0
 

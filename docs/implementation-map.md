@@ -53,7 +53,7 @@ and dependency path, yet all code remains same-project Python.
   and status discipline.
 
 The complete suite has 87 methods, including type-sensitive embedded-query
-binding, minimum-initial witness ties, duplicate-key and byte-cap rejection, and
+binding, minimum-initial witness ties, duplicate-key rejection, byte-cap limits, and
 mock-clock deadline checks before zero/sub-128 work returns. `results/` retains
 all selected exact inputs
 and all claim-linked outputs. `results/pilot` is historical feasibility evidence

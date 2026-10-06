@@ -59,6 +59,18 @@ class ResourceEnvelopeTests(unittest.TestCase):
         with self.assertRaises(ResourceEnvelopeError):
             check_certificate_bytes_bounded(b'\xff')
 
+    def test_scalar_dimensions_capped_before_table_recomputation(self) -> None:
+        value = json.loads(VALID_CERT.read_bytes())
+        value["abstraction"]["system"]["horizon"] = 100_000_000
+        value["concrete"]["horizon"] = 100_000_000
+        with self.assertRaises(ResourceEnvelopeError):
+            check_certificate_bytes_bounded(json.dumps(value).encode())
+
+    def test_transition_visit_limit_precedes_semantics(self) -> None:
+        with self.assertRaises(ResourceEnvelopeError):
+            check_certificate_bytes_bounded(VALID_CERT.read_bytes(),
+                                            limits=CheckerLimits(max_transition_visits=1))
+
 
 if __name__ == "__main__":
     unittest.main()

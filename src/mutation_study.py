@@ -83,7 +83,9 @@ def run(out: Path) -> dict[str, Any]:
         try:
             check(p, c)
             status, reason = "accepted", ""
-        except (Reject, Limit, ValueError, KeyError, TypeError, IndexError) as exc:
+        except Limit as exc:
+            status, reason = "unknown", str(exc)
+        except (Reject, ValueError, KeyError, TypeError, IndexError) as exc:
             status, reason = "rejected", str(exc)
         results.append({"mutation": name, "obligation": obligation,
                         "status": status, "reason": reason})
@@ -95,7 +97,9 @@ def run(out: Path) -> dict[str, Any]:
     try:
         check(safe, forged)
         status, reason = "accepted", ""
-    except (Reject, Limit, ValueError, KeyError, TypeError, IndexError) as exc:
+    except Limit as exc:
+        status, reason = "unknown", str(exc)
+    except (Reject, ValueError, KeyError, TypeError, IndexError) as exc:
         status, reason = "rejected", str(exc)
     results.append({"mutation": "forged-safe-witness", "obligation": "witness replay",
                     "status": status, "reason": reason})
@@ -120,7 +124,7 @@ def main() -> int:
         print(json.dumps({"status": "failed", "reason": str(exc)}))
         return 1
     print(json.dumps({key: summary[key] for key in ("mutations", "rejected", "accepted")}, sort_keys=True))
-    return 0 if summary["accepted"] == 0 else 1
+    return 0 if summary["rejected"] == summary["mutations"] else 1
 
 
 if __name__ == "__main__":

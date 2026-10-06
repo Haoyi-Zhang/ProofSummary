@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import dataclass
 from math import inf
 from typing import Any, Mapping
@@ -76,7 +77,8 @@ def _parse_system(obj: Any, name: str) -> dict[str, Any]:
         if not isinstance(edge["id"], str) or not edge["id"] or edge["id"] in ids:
             raise CertificateError(f"{name}.edges[{index}].id invalid or duplicate")
         ids.add(edge["id"])
-        if edge["src"] not in state_set or edge["dst"] not in state_set:
+        if (not isinstance(edge["src"], str) or not isinstance(edge["dst"], str) or
+                edge["src"] not in state_set or edge["dst"] not in state_set):
             raise CertificateError(f"{name}.edges[{index}] endpoint invalid")
         parsed_edges.append({"id": edge["id"], "src": edge["src"], "dst": edge["dst"],
                              "gas": _nat(edge["gas"], "edge.gas"),
@@ -89,39 +91,39 @@ def _parse_system(obj: Any, name: str) -> dict[str, Any]:
     }
 
 
-def _decode(value: Any, name: str) -> float:
+def _decode(value: Any, name: str) -> int | float:
     if value == INF_TOKEN:
         return inf
-    return float(_nat(value, name))
+    return _nat(value, name)
 
 
-def _recompute_table(system: dict[str, Any]) -> list[dict[str, list[float]]]:
+def _recompute_table(system: dict[str, Any]) -> list[dict[str, list[int | float]]]:
     outgoing: dict[str, list[dict[str, Any]]] = {s: [] for s in system["states"]}
     for edge in system["edges"]:
         outgoing[edge["src"]].append(edge)
-    table: list[dict[str, list[float]]] = []
-    base: dict[str, list[float]] = {}
+    table: list[dict[str, list[int | float]]] = []
+    base: dict[str, list[int | float]] = {}
     for state in system["states"]:
-        base[state] = [0.0 if state in system["errors"] else inf for _ in range(system["gas_bound"] + 1)]
+        base[state] = [0 if state in system["errors"] else inf for _ in range(system["gas_bound"] + 1)]
     table.append(base)
     for h in range(1, system["horizon"] + 1):
-        layer: dict[str, list[float]] = {}
+        layer: dict[str, list[int | float]] = {}
         for state in system["states"]:
-            row: list[float] = []
+            row: list[int | float] = []
             for budget in range(system["gas_bound"] + 1):
-                best = 0.0 if state in system["errors"] else inf
+                best = 0 if state in system["errors"] else inf
                 for edge in outgoing[state]:
                     if edge["gas"] <= budget:
                         suffix = table[h - 1][edge["dst"]][budget - edge["gas"]]
                         if suffix != inf:
-                            best = min(best, float(edge["cost"]) + suffix)
+                            best = min(best, edge["cost"] + suffix)
                 row.append(best)
             layer[state] = row
         table.append(layer)
     return table
 
 
-def _validate_supplied_table(raw: Any, system: dict[str, Any], expected: list[dict[str, list[float]]]) -> None:
+def _validate_supplied_table(raw: Any, system: dict[str, Any], expected: list[dict[str, list[int | float]]]) -> None:
     if not isinstance(raw, list) or len(raw) != system["horizon"] + 1:
         raise CertificateError("lower_table has wrong number of layers")
     for h, layer in enumerate(raw):
@@ -148,6 +150,8 @@ def _replay(witness: Any, concrete: dict[str, Any], budget: int) -> int:
     total_gas = 0
     total_cost = 0
     for edge_id in witness["edges"]:
+        if state in concrete["errors"]:
+            raise CertificateError("witness continues after first error")
         if edge_id not in edge_map:
             raise CertificateError(f"witness references unknown edge {edge_id}")
         edge = edge_map[edge_id]
@@ -171,12 +175,23 @@ def _replay(witness: Any, concrete: dict[str, Any], budget: int) -> int:
     return total_cost
 
 
-def check_certificate_object(cert: Any) -> CheckResult:
+def check_certificate_object(cert: Any, *, expected_model_sha256: str | None = None) -> CheckResult:
     _keys(cert, {"schema", "semantics", "concrete", "abstraction", "lower_table", "witnesses", "claims",
-                 "untrusted_metrics", "producer_contract"}, "certificate")
+                 "untrusted_metrics", "producer_contract"}, "certificate", optional={"model_binding"})
     if cert["schema"] != "pcrh-sandwich-certificate-v1":
         raise CertificateError("unsupported schema")
     concrete = _parse_system(cert["concrete"], "concrete")
+    # Legacy retained certificates lack this annotation. A caller-supplied
+    # digest is still checked against the complete serialized concrete model.
+    digest = hashlib.sha256(json.dumps(cert["concrete"], sort_keys=True,
+                                      separators=(",", ":"), ensure_ascii=True).encode("utf-8")).hexdigest()
+    if "model_binding" in cert:
+        binding = cert["model_binding"]
+        _keys(binding, {"canonical_sha256"}, "model_binding")
+        if binding["canonical_sha256"] != digest:
+            raise CertificateError("model digest mismatch")
+    if expected_model_sha256 is not None and expected_model_sha256 != digest:
+        raise CertificateError("external model digest mismatch")
     abstraction = cert["abstraction"]
     _keys(abstraction, {"name", "alpha", "system", "simulation_obligation"}, "abstraction")
     abstract = _parse_system(abstraction["system"], "abstraction.system")
@@ -241,6 +256,8 @@ def check_certificate_object(cert: Any) -> CheckResult:
                 raise CertificateError("concrete witness violates checked lower bound")
         claim = claims[key]
         _keys(claim, {"status", "lower", "upper"}, f"claims[{key}]")
+        _decode(claim["lower"], f"claims[{key}].lower")
+        _decode(claim["upper"], f"claims[{key}].upper")
         if claim["status"] != status or claim["lower"] != lower_json or claim["upper"] != upper_json:
             raise CertificateError(f"claim mismatch at budget {budget}")
         results[budget] = {"status": status, "lower": lower_json, "upper": upper_json}

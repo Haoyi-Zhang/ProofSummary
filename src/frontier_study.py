@@ -128,7 +128,10 @@ def run_one(p: dict[str, Any], group: str, source_phase: str, out: Path,
             row["dense_status"] = "unknown"
             dense_result = {"evidence": row["dense_evidence"], "status": "unknown",
                             "reason": str(exc), "current_dense_checker_invoked": False}
-        except (DenseCheckReject, DenseCheckLimit) as exc:
+        except DenseCheckReject:
+            # False evidence is a scientific failure, not an unavailable baseline.
+            raise
+        except DenseCheckLimit as exc:
             row["dense_evidence"] = "current-dense-checker-failed"
             row["dense_status"] = "unknown"
             dense_result = {"evidence": row["dense_evidence"], "status": "unknown",

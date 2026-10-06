@@ -15,9 +15,11 @@ def enumerate_traces(p: dict[str, Any], max_prefixes: int=200_000,
     domain=2**p['bits']; best=None; winning=None; count=0; errors=0
     stack=[(p['start'],x,0,0,[],[x],0) for x in p['initial']]
     while stack:
+        if time.process_time()-began>seconds:
+            return {'status':'unknown','cost':None,'prefixes':count,'error_traces':errors}
         q,x,used_g,used_h,trace,values,cost=stack.pop()
         count+=1
-        if count>max_prefixes or (count%128==0 and time.process_time()-began>seconds):
+        if count>max_prefixes:
             return {'status':'unknown','cost':None,'prefixes':count-1,'error_traces':errors}
         if q in p['errors']:
             errors+=1
@@ -37,5 +39,7 @@ def enumerate_traces(p: dict[str, Any], max_prefixes: int=200_000,
                         continue
                 stack.append((e['dst'],y,used_g+e['gas'],used_h+1,
                               trace+[e['id']],values+[y],cost+e['cost']))
+    if time.process_time()-began>seconds:
+        return {'status':'unknown','cost':None,'prefixes':count,'error_traces':errors}
     return {'status':'safe_bounded' if best is None else 'optimal_bounded',
             'cost':best,'witness':winning,'prefixes':count,'error_traces':errors}

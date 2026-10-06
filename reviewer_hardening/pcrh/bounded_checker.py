@@ -26,6 +26,8 @@ class CheckerLimits:
     max_dict_items: int = 100_000
     max_string_bytes: int = 4 * 1024 * 1024
     max_integer_abs: int = (1 << 63) - 1
+    max_table_cells: int = 200_000
+    max_transition_visits: int = 200_000
 
 
 DEFAULT_LIMITS = CheckerLimits()
@@ -94,6 +96,32 @@ def _validate_envelope(value: Any, limits: CheckerLimits) -> None:
         raise ResourceEnvelopeError(f"unsupported decoded JSON value: {type(node).__name__}")
 
 
+def _bound_semantic_work(value: dict[str, Any], limits: CheckerLimits) -> None:
+    """Bound the table requested by scalar dimensions, not just JSON nodes.
+
+    Malformed dimensions are left for the semantic schema checker. Valid
+    integer dimensions cannot cause a huge allocation before a shape check.
+    Transition visits conservatively include syntactic error-source edges.
+    """
+    abstraction = value.get("abstraction")
+    if not isinstance(abstraction, dict):
+        return
+    system = abstraction.get("system")
+    if not isinstance(system, dict):
+        return
+    states, edges = system.get("states"), system.get("edges")
+    horizon, gas = system.get("horizon"), system.get("gas_bound")
+    if (not isinstance(states, list) or not isinstance(edges, list) or
+            type(horizon) is not int or type(gas) is not int or horizon < 0 or gas < 0):
+        return
+    if len(states) * (horizon + 1) * (gas + 1) > limits.max_table_cells:
+        raise ResourceEnvelopeError("requested semantic table exceeds checker limit")
+    # The recurrence loops over each syntactic edge at every gas and step
+    # layer, even when the charge is too high to use that edge.
+    if horizon * (gas + 1) * len(edges) > limits.max_transition_visits:
+        raise ResourceEnvelopeError("requested semantic transition visits exceed checker limit")
+
+
 def check_certificate_bytes_bounded(
     payload: bytes,
     *,
@@ -122,6 +150,7 @@ def check_certificate_bytes_bounded(
     _validate_envelope(value, limits)
     if not isinstance(value, dict):
         raise ResourceEnvelopeError("certificate top level must be an object")
+    _bound_semantic_work(value, limits)
     return check_certificate_object(
         value,
         expected_model_sha256=expected_model_sha256,

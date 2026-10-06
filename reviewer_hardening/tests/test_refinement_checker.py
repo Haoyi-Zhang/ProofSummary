@@ -37,7 +37,7 @@ class RefinementCheckerTests(unittest.TestCase):
     def test_different_resource_bound(self) -> None:
         bad = copy.deepcopy(self.fine)
         # Any semantic tamper is rejected before relation checking.
-        bad["resource"]["horizon"] += 1
+        bad["concrete"]["horizon"] += 1
         with self.assertRaises(CertificateError):
             check_refinement_relation(self.coarse, bad)
 

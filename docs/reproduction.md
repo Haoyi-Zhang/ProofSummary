@@ -25,7 +25,8 @@ new evidence.
 
 ## Sequence executed
 
-1. `python -m unittest discover -s tests -v` (87 test methods).
+1. `python -m unittest discover -s tests -v` (93 current test methods;
+   the retained historical run had 87).
 2. Replay `interval-pilot`, `main`, `family`, and `boundary` dense phases.
 3. Compare each dense phase's input, certificate, detail JSON, and every
    deterministic `raw.csv` field.

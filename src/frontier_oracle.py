@@ -28,9 +28,11 @@ def enumerate_frontier(p: dict[str, Any], *, max_prefixes: int = 200_000,
     prefixes = 0
     first_errors = 0
     while stack:
+        if time.process_time() - started > seconds:
+            return {"status": "unknown", "prefixes": prefixes, "error_traces": first_errors, "frontier": None}
         q, x, gas, steps, cost = stack.pop()
         prefixes += 1
-        if prefixes > max_prefixes or (prefixes % 128 == 0 and time.process_time() - started > seconds):
+        if prefixes > max_prefixes:
             return {"status": "unknown", "prefixes": prefixes - 1, "error_traces": first_errors, "frontier": None}
         if q in p["errors"]:
             pairs.append((gas, cost))
@@ -50,6 +52,8 @@ def enumerate_frontier(p: dict[str, Any], *, max_prefixes: int = 200_000,
                     continue
                 stack.append((edge["dst"], y, new_gas, steps + 1, cost + edge["cost"]))
     frontier = _pareto(pairs)
+    if time.process_time() - started > seconds:
+        return {"status": "unknown", "prefixes": prefixes, "error_traces": first_errors, "frontier": None}
     return {
         "status": "safe_bounded" if not frontier else "optimal_bounded",
         "cost": None if not frontier else min(cost for _, cost in frontier),

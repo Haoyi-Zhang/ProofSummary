@@ -14,6 +14,19 @@ PYTHONPATH=. python scripts/run_resource_attacks.py --out /tmp/pcrh-resource-att
 The limits are an availability contract, not a semantic assumption: exceeding
 a limit returns rejection and never an optimal/safe verdict.
 
+The envelope also bounds the requested abstract table to 200,000 cells and
+the recurrence's step/gas/edge visits to 200,000, before allocating that table.
+Small JSON scalar dimensions cannot bypass these reconstruction limits.
+Finite costs and priorities use exact Python integers, including above
+the floating-point exactness boundary. Witnesses stop at the first error.
+
+New certificates include the SHA-256 of the complete concrete model's
+canonical JSON (sorted keys, compact separators, ASCII escaping, UTF-8).
+The checker validates this annotation when present and always checks a
+caller-supplied `expected_model_sha256` against the model itself. Retained
+legacy certificates without the annotation remain checkable; self-binding
+alone does not validate source-language translation or authenticate a model.
+
 ## Repository-wide release gate
 
 From the full project root, a clean end-to-end gate is available as:

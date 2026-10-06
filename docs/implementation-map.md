@@ -6,7 +6,7 @@
 |---|---|---|
 | `src/frontier_producer.py` | Validates supported input, computes exact layer frontiers, deterministically extracts a witness for the least `(cost,gas,initial)` outcome, writes certificate | Not imported by checker or oracle |
 | `src/frontier_checker.py` | Strictly decodes query/certificate, replays witness, reconstructs every exact recurrence row, interprets initial frontier | Imports no project semantics/producer/Pareto/oracle code |
-| `src/frontier_oracle.py` | Enumerates bounded forward prefixes without dynamic programming or dominance pruning | Own parser/transition path; used only as a small exact oracle |
+| `src/frontier_oracle.py` | Enumerates bounded forward prefixes without dynamic programming or dominance pruning | Own transition path on well-formed inputs, not a parser; used only as a small exact oracle |
 | `src/frontier_cases.py` | Deterministic regression conversion and 14 stress systems | Selection logic separated from checking |
 | `src/frontier_study.py` | Runs producer/checker and optional dense/oracle comparisons under caps | Emits exact inputs, certificates, details, and CSV |
 | `src/frontier_replay.py` | Re-executes retained frontier inputs without regenerating selection | Used by clean reproduction |
@@ -52,9 +52,10 @@ and dependency path, yet all code remains same-project Python.
 - `tests/test_io_bounds.py`: duplicate keys, byte caps, product/row/work limits,
   and status discipline.
 
-The complete suite has 87 methods, including type-sensitive embedded-query
-binding, minimum-initial witness ties, duplicate-key rejection, byte-cap limits, and
-mock-clock deadline checks before zero/sub-128 work returns. `results/` retains
+The current suite has 93 methods (87 in the retained historical run), including type-sensitive embedded-query
+binding, minimum-initial witness ties, duplicate-key rejection, byte-cap limits,
+mock-clock deadline checks before zero/sub-128 work returns, and study fail gates
+that distinguish rejection, exhaustion, and positive acceptance. `results/` retains
 all selected exact inputs
 and all claim-linked outputs. `results/pilot` is historical feasibility evidence
 and is not double-counted in the 661 regression total.
@@ -68,7 +69,7 @@ corresponding executable JSON summaries are retained under
 
 ## Reproduction controller
 
-`reproduce.py` creates a fresh destination, runs the 87 tests, replays four
+`reproduce.py` creates a fresh destination, runs the current 93 tests, replays four
 dense phases and two frontier phases, public cases, the 21 function-level
 mutations, the separate bounded byte-consumer study, and exhaustive micro
 validation, then regenerates both aggregate analyses. It compares exact JSON

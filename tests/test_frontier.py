@@ -10,6 +10,8 @@ import frontier_checker
 from frontier_checker import Limit, Reject, check, check_bytes
 from frontier_oracle import enumerate_frontier
 import frontier_producer
+import frontier_oracle
+import oracle
 from frontier_producer import Exhausted, produce
 
 
@@ -142,6 +144,22 @@ class FrontierCertificateTests(unittest.TestCase):
         with patch.object(frontier_checker.time, "process_time", expiring):
             with self.assertRaises(Limit):
                 check(p, certificate, seconds=0.5)
+
+    def test_both_oracles_expire_before_small_result(self) -> None:
+        p = tradeoff_chain(1)
+        for run in (frontier_oracle.enumerate_frontier, oracle.enumerate_traces):
+            result = run(p, seconds=-1)
+            self.assertEqual("unknown", result["status"])
+            self.assertEqual(0, result["prefixes"])
+
+    def test_frontier_oracle_checks_deadline_after_normalization(self) -> None:
+        p = tradeoff_chain(1)
+        counter = _CountingClock()
+        with patch.object(frontier_oracle.time, "process_time", counter):
+            baseline = enumerate_frontier(p, seconds=0.5)
+        self.assertEqual("optimal_bounded", baseline["status"])
+        with patch.object(frontier_oracle.time, "process_time", _CountingClock(expire_on=counter.calls)):
+            self.assertEqual("unknown", enumerate_frontier(p, seconds=0.5)["status"])
 
 
 if __name__ == "__main__":

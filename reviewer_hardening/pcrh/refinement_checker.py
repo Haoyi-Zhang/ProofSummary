@@ -39,7 +39,7 @@ def _require_str_list(obj: Any, label: str) -> list[str]:
 
 def _edge_tuple(edge: Any, label: str) -> tuple[str, str, int, int]:
     e = _require_dict(edge, label)
-    if set(e) != {"src", "dst", "gas", "cost"}:
+    if set(e) != {"id", "src", "dst", "gas", "cost"}:
         raise CertificateError(f"{label} has an invalid key set")
     src, dst, gas, cost = e["src"], e["dst"], e["gas"], e["cost"]
     if not isinstance(src, str) or not isinstance(dst, str):
@@ -51,12 +51,17 @@ def _edge_tuple(edge: Any, label: str) -> tuple[str, str, int, int]:
     return src, dst, gas, cost
 
 
-def _system_view(cert: dict[str, Any], key: str) -> tuple[set[str], set[str], set[str], list[tuple[str, str, int, int]]]:
-    system = _require_dict(cert.get(key), key)
+def _system_view(cert: dict[str, Any]) -> tuple[set[str], set[str], set[str], list[tuple[str, str, int, int]]]:
+    key = "abstraction.system"
+    abstraction = _require_dict(cert.get("abstraction"), "abstraction")
+    system = _require_dict(abstraction.get("system"), key)
     # The certificate schema uses these exact names; checking here is separate
     # from (and in addition to) the full semantic checker.
     states = set(_require_str_list(system.get("states"), f"{key}.states"))
-    initials = set(_require_str_list(system.get("initials"), f"{key}.initials"))
+    initial = system.get("initial")
+    if not isinstance(initial, str) or initial not in states:
+        raise CertificateError(f"{key}.initial is invalid")
+    initials = {initial}
     errors = set(_require_str_list(system.get("errors"), f"{key}.errors"))
     raw_edges = system.get("edges")
     if not isinstance(raw_edges, list):
@@ -67,8 +72,8 @@ def _system_view(cert: dict[str, Any], key: str) -> tuple[set[str], set[str], se
 
 def derive_refinement_map(coarse: Mapping[str, Any], fine: Mapping[str, Any]) -> dict[str, str]:
     """Derive the unique factor map from two concrete abstraction maps."""
-    coarse_alpha = _require_dict(coarse.get("alpha"), "coarse.alpha")
-    fine_alpha = _require_dict(fine.get("alpha"), "fine.alpha")
+    coarse_alpha = _require_dict(_require_dict(coarse.get("abstraction"), "coarse.abstraction").get("alpha"), "coarse.alpha")
+    fine_alpha = _require_dict(_require_dict(fine.get("abstraction"), "fine.abstraction").get("alpha"), "fine.alpha")
     if set(coarse_alpha) != set(fine_alpha):
         raise CertificateError("coarse and fine alpha domains differ")
     rho: dict[str, str] = {}
@@ -94,15 +99,11 @@ def check_refinement_relation(
     check_certificate_object(coarse, expected_model_sha256=expected_model_sha256)
     check_certificate_object(fine, expected_model_sha256=expected_model_sha256)
 
-    if coarse.get("model_binding") != fine.get("model_binding"):
-        raise CertificateError("refinement certificates bind different concrete models")
     if coarse.get("concrete") != fine.get("concrete"):
         raise CertificateError("refinement certificates contain different concrete systems")
-    if coarse.get("resource") != fine.get("resource"):
-        raise CertificateError("refinement certificates use different resource bounds")
 
-    fine_states, fine_initials, fine_errors, fine_edges = _system_view(fine, "abstract")
-    coarse_states, coarse_initials, coarse_errors, coarse_edges = _system_view(coarse, "abstract")
+    fine_states, fine_initials, fine_errors, fine_edges = _system_view(fine)
+    coarse_states, coarse_initials, coarse_errors, coarse_edges = _system_view(coarse)
 
     relation = dict(rho) if rho is not None else derive_refinement_map(coarse, fine)
     if set(relation) != fine_states:
@@ -110,8 +111,8 @@ def check_refinement_relation(
     if any(not isinstance(v, str) or v not in coarse_states for v in relation.values()):
         raise CertificateError("refinement map has an invalid coarse target")
 
-    coarse_alpha = _require_dict(coarse.get("alpha"), "coarse.alpha")
-    fine_alpha = _require_dict(fine.get("alpha"), "fine.alpha")
+    coarse_alpha = coarse["abstraction"]["alpha"]
+    fine_alpha = fine["abstraction"]["alpha"]
     if set(coarse_alpha) != set(fine_alpha):
         raise CertificateError("coarse and fine alpha domains differ")
     for state in fine_alpha:

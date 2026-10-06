@@ -5,6 +5,8 @@ from functools import lru_cache
 from heapq import heappop, heappush
 from itertools import count
 from math import inf
+import hashlib
+import json
 from typing import Any, Iterable, Mapping, Sequence
 
 INF_TOKEN = "INF"
@@ -136,34 +138,34 @@ def build_quotient(concrete: System, alpha: Mapping[str, str]) -> System:
     )
 
 
-def dense_value_table(system: System) -> list[dict[str, list[float]]]:
+def dense_value_table(system: System) -> list[dict[str, list[int | float]]]:
     """Exact minimum error cost for every (remaining steps, state, gas budget)."""
     out = system.outgoing()
-    table: list[dict[str, list[float]]] = []
-    base: dict[str, list[float]] = {}
+    table: list[dict[str, list[int | float]]] = []
+    base: dict[str, list[int | float]] = {}
     for state in system.states:
-        value = 0.0 if state in system.errors else inf
+        value = 0 if state in system.errors else inf
         base[state] = [value for _ in range(system.gas_bound + 1)]
     table.append(base)
     for h in range(1, system.horizon + 1):
-        layer: dict[str, list[float]] = {}
+        layer: dict[str, list[int | float]] = {}
         prev = table[h - 1]
         for state in system.states:
-            values: list[float] = []
+            values: list[int | float] = []
             for budget in range(system.gas_bound + 1):
-                best = 0.0 if state in system.errors else inf
+                best = 0 if state in system.errors else inf
                 for edge in out[state]:
                     if edge.gas <= budget:
                         suffix = prev[edge.dst][budget - edge.gas]
                         if suffix != inf:
-                            best = min(best, float(edge.cost) + suffix)
+                            best = min(best, edge.cost + suffix)
                 values.append(best)
             layer[state] = values
         table.append(layer)
     return table
 
 
-def encode_table(table: Sequence[Mapping[str, Sequence[float]]]) -> list[dict[str, list[int | str]]]:
+def encode_table(table: Sequence[Mapping[str, Sequence[int | float]]]) -> list[dict[str, list[int | str]]]:
     encoded: list[dict[str, list[int | str]]] = []
     for layer in table:
         encoded_layer: dict[str, list[int | str]] = {}
@@ -173,12 +175,12 @@ def encode_table(table: Sequence[Mapping[str, Sequence[float]]]) -> list[dict[st
     return encoded
 
 
-def _heuristic(table: Sequence[Mapping[str, Sequence[float]]], alpha: Mapping[str, str],
-               state: str, remaining_steps: int, remaining_gas: int) -> float:
+def _heuristic(table: Sequence[Mapping[str, Sequence[int | float]]], alpha: Mapping[str, str],
+               state: str, remaining_steps: int, remaining_gas: int) -> int | float:
     return table[remaining_steps][alpha[state]][remaining_gas]
 
 
-def astar_witness(concrete: System, alpha: Mapping[str, str], abstract_table: Sequence[Mapping[str, Sequence[float]]],
+def astar_witness(concrete: System, alpha: Mapping[str, str], abstract_table: Sequence[Mapping[str, Sequence[int | float]]],
                   budget: int) -> tuple[dict[str, Any] | None, int]:
     """Find an optimal concrete witness using only the abstract lower table.
 
@@ -194,7 +196,7 @@ def astar_witness(concrete: System, alpha: Mapping[str, str], abstract_table: Se
         return None, 0
     serial = count()
     start = (concrete.initial, 0, 0)  # state, gas used, steps used
-    heap: list[tuple[float, int, int, tuple[str, int, int]]] = []
+    heap: list[tuple[int | float, int, int, tuple[str, int, int]]] = []
     heappush(heap, (start_h, 0, next(serial), start))
     best: dict[tuple[str, int, int], int] = {start: 0}
     parent: dict[tuple[str, int, int], tuple[tuple[str, int, int], str]] = {}
@@ -233,7 +235,7 @@ def astar_witness(concrete: System, alpha: Mapping[str, str], abstract_table: Se
                 continue
             nxt = (edge.dst, new_gas, steps_used + 1)
             new_cost = path_cost + edge.cost
-            if new_cost >= best.get(nxt, 1 << 62):
+            if new_cost >= best.get(nxt, inf):
                 continue
             rem_steps = concrete.horizon - (steps_used + 1)
             rem_gas = budget - new_gas
@@ -282,7 +284,7 @@ def ucs_witness(concrete: System, budget: int) -> tuple[dict[str, Any] | None, i
                 continue
             nxt = (edge.dst, new_gas, steps_used + 1)
             new_cost = cost_so_far + edge.cost
-            if new_cost < best.get(nxt, 1 << 62):
+            if new_cost < best.get(nxt, inf):
                 best[nxt] = new_cost
                 parent[nxt] = (node, edge.edge_id)
                 heappush(heap, (new_cost, next(serial), nxt))
@@ -343,6 +345,9 @@ def make_certificate(concrete: System, alpha: Mapping[str, str], abstraction_nam
             status = "gap"
         claims[str(budget)] = {"status": status, "lower": lb_json, "upper": upper}
         search_metrics[str(budget)] = {"astar_expansions": expansions}
+    concrete_object = concrete.to_dict()
+    digest = hashlib.sha256(json.dumps(concrete_object, sort_keys=True,
+                                      separators=(",", ":"), ensure_ascii=True).encode("utf-8")).hexdigest()
     return {
         "schema": "pcrh-sandwich-certificate-v1",
         "semantics": {
@@ -350,7 +355,8 @@ def make_certificate(concrete: System, alpha: Mapping[str, str], abstraction_nam
             "budget": "sum(edge.gas) <= query budget",
             "objective": "minimum non-negative path cost to any error state",
         },
-        "concrete": concrete.to_dict(),
+        "concrete": concrete_object,
+        "model_binding": {"canonical_sha256": digest},
         "abstraction": {
             "name": abstraction_name,
             "alpha": {s: alpha[s] for s in sorted(alpha)},

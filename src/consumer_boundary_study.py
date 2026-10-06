@@ -112,8 +112,8 @@ def run(out: Path) -> dict[str, Any]:
         result = consumer(frozen_query, frozen_certificate,
                           max_bytes=max(len(frozen_query), len(frozen_certificate)))
         status = result["status"]
-        if status not in {"optimal_bounded", "safe_bounded", "gap_bounded", "unknown"}:
-            raise AssertionError("unexpected consumer status")
+        if status not in {"optimal_bounded", "safe_bounded", "gap_bounded"}:
+            raise AssertionError("positive consumer encoding was not accepted: " + status)
         positives.append({
             "case": name,
             "checker": checker_name,

@@ -64,6 +64,29 @@ def compare(source: Path, replay: Path) -> int:
 def compare_tree(source: Path, replay: Path) -> int:
     old = {p.relative_to(source): p.read_bytes() for p in source.rglob('*') if p.is_file()}
     new = {p.relative_to(replay): p.read_bytes() for p in replay.rglob('*') if p.is_file()}
+    # The summary is a JSON object, not a frozen consumer byte string. Preserve
+    # every typed field, but do not equate object insertion order with meaning.
+    def summary_value(raw: bytes) -> str:
+        def unique_pairs(items):
+            result = {}
+            for key, value in items:
+                if key in result:
+                    raise ValueError('Duplicate byte-boundary summary key: ' + key)
+                result[key] = value
+            return result
+        def invalid_constant(value):
+            raise ValueError('Nonfinite byte-boundary summary value: ' + value)
+        value = json.loads(raw.decode('utf-8'), object_pairs_hook=unique_pairs,
+                           parse_constant=invalid_constant)
+        return json.dumps(value, sort_keys=True, ensure_ascii=False,
+                          separators=(',', ':'), allow_nan=False)
+    summary = Path('summary.json')
+    if summary in old and summary in new:
+        if summary_value(old[summary]) != summary_value(new[summary]):
+            raise ValueError('Changed byte-boundary summary fields.')
+        # Only the report's serialization is normalized. Every frozen query,
+        # certificate and negative byte fixture remains byte-for-byte compared.
+        new[summary] = old[summary]
     if old != new:
         missing = sorted(str(k) for k in old.keys() - new.keys())
         extra = sorted(str(k) for k in new.keys() - old.keys())

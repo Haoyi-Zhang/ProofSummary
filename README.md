@@ -88,7 +88,7 @@ python reproduce.py --out /tmp/pmr-reproduction
 ```
 
 The controller refuses to overwrite an existing directory. It runs the current
-93-method unit suite and reconstructs the dense phases, frontier regression and stress
+98-method unit suite and reconstructs the dense phases, frontier regression and stress
 phases, public quotients, function-level mutation study, bounded byte-consumer
 study, exhaustive micro universe, and both aggregate analyses. It compares every
 retained input/certificate/detail JSON
@@ -167,7 +167,7 @@ python src/interval_checker.py \
 - `src/producer.py`, `checker.py`, `interval_checker.py`, `oracle.py` - legacy
   dense/interval reference path.
 - `src/bad_search.py` - deliberately unsound gas/step/value-erasure controls.
-- `tests/` - 93 acceptance, rejection, type-binding, deadline, byte-boundary,
+- `tests/` - 98 acceptance, rejection, type-binding, deadline, byte-boundary,
   frontier, and representation tests.
 - `results/` - exact inputs, certificates, detailed outcomes, CSV files, and
   aggregate JSON used by the paper.
@@ -198,23 +198,22 @@ size boundary, not the invention of independent optimality certification or
 Pareto dynamic programming.
 
 
-## Current local checks
+## Current reproduction
 
-A separate Windows-local function campaign reran 661 retained regression
-queries, with current frontier and dense byte consumers and interval function
-checks; all agreed with forward enumeration and the retained results. It also
-checked the 42,372-query micro universe, fourteen stress systems (nine dense
-acceptances, five dense-producer unknowns, and four capped oracles), six public
-quotients, 21 rejected mutations, and the 24-case byte-consumer study. The
-current main suite passes 93 methods; the supplementary quotient prototype
-passes 34 methods, including exact large-integer arithmetic, first-error replay,
-model binding, resource limits, and checked refinement.
+The current Ubuntu/CPython 3.12.14 clean run passed 98 main tests and replayed
+661 dense queries, 675 frontier queries (including fourteen stress systems),
+six public quotients, 21 mutations, 24 byte-consumer cases, and the 42,372-query
+micro universe. Semantic outputs matched retained results, including the five
+dense-producer unknowns and four capped oracles. Child CPU time was 33.598428
+seconds and peak child RSS was 35,196 KiB; controller CPU time was 0.858427143
+seconds. The supplementary quotient run separately passed 34 tests and the
+refinement audit. Raw current records are retained under
+`results/measurements/current-linux/`; historical host records are unchanged.
 
-This local campaign is not the Unix clean reproduction controller. The retained
-historical timing and memory measurements have not been replaced. The added
-scientific workflow targets the flat artifact repository, runs the Unix
-controller and supplementary tests under bounded resources, and uploads raw
-outputs on failure as well as success; it has not been run remotely here.
+The bounded scientific workflow runs the Unix controller and supplementary
+tests and retains raw outputs on failure as well as success. Timing variation
+does not excuse changed scientific fields: summary JSON is compared as a typed
+object, while frozen byte-boundary queries and certificates remain byte-exact.
 
 ## License
 

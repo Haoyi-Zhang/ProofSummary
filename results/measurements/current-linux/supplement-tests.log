@@ -1,0 +1,39 @@
+test_consumer_import_does_not_initialize_producer (test_bounded_checker_independence.BoundedCheckerIndependenceTests.test_consumer_import_does_not_initialize_producer) ... ok
+test_no_producer_import (test_bounded_checker_independence.BoundedCheckerIndependenceTests.test_no_producer_import) ... ok
+test_boolean_claim_does_not_alias_integer (test_exact_arithmetic.ExactArithmeticTests.test_boolean_claim_does_not_alias_integer) ... ok
+test_exact_integer_lower_table_above_float_boundary (test_exact_arithmetic.ExactArithmeticTests.test_exact_integer_lower_table_above_float_boundary) ... ok
+test_rounded_up_nonminimum_witness_cannot_be_optimal (test_exact_arithmetic.ExactArithmeticTests.test_rounded_up_nonminimum_witness_cannot_be_optimal) ... ok
+test_search_has_no_finite_infinity_sentinel (test_exact_arithmetic.ExactArithmeticTests.test_search_has_no_finite_infinity_sentinel) ... ok
+test_witness_stops_at_first_error (test_exact_arithmetic.ExactArithmeticTests.test_witness_stops_at_first_error) ... ok
+test_checker_does_not_import_generator (test_import_independence.IndependenceTests.test_checker_does_not_import_generator) ... ok
+test_bool_not_integer (test_pcrh.SandwichTests.test_bool_not_integer) ... ok
+test_claim_cannot_upgrade_gap (test_pcrh.SandwichTests.test_claim_cannot_upgrade_gap) ... ok
+test_duplicate_json_key_rejected (test_pcrh.SandwichTests.test_duplicate_json_key_rejected) ... ok
+test_external_model_binding_rejects_substitution (test_pcrh.SandwichTests.test_external_model_binding_rejects_substitution) ... ok
+test_full_partition_closes_every_budget (test_pcrh.SandwichTests.test_full_partition_closes_every_budget) ... ok
+test_initial_error_zero_length (test_pcrh.SandwichTests.test_initial_error_zero_length) ... ok
+test_refinement_lower_bound_monotone (test_pcrh.SandwichTests.test_refinement_lower_bound_monotone) ... ok
+test_self_model_binding_rejects_tampering (test_pcrh.SandwichTests.test_self_model_binding_rejects_tampering) ... ok
+test_splicing_creates_gap_not_false_optimum (test_pcrh.SandwichTests.test_splicing_creates_gap_not_false_optimum) ... ok
+test_unreachable_is_safe (test_pcrh.SandwichTests.test_unreachable_is_safe) ... ok
+test_weighted_underestimate_is_sound (test_pcrh.SandwichTests.test_weighted_underestimate_is_sound) ... ok
+test_zero_gas_zero_cost_cycle_terminates (test_pcrh.SandwichTests.test_zero_gas_zero_cost_cycle_terminates) ... ok
+test_committed_pair (test_refinement_checker.RefinementCheckerTests.test_committed_pair) ... ok
+test_different_resource_bound (test_refinement_checker.RefinementCheckerTests.test_different_resource_bound) ... ok
+test_wrong_factor_target (test_refinement_checker.RefinementCheckerTests.test_wrong_factor_target) ... ok
+test_byte_limit (test_resource_envelope.ResourceEnvelopeTests.test_byte_limit) ... ok
+test_depth_limit (test_resource_envelope.ResourceEnvelopeTests.test_depth_limit) ... ok
+test_duplicate_key (test_resource_envelope.ResourceEnvelopeTests.test_duplicate_key) ... ok
+test_float_is_rejected (test_resource_envelope.ResourceEnvelopeTests.test_float_is_rejected) ... ok
+test_integer_limit_precedes_semantics (test_resource_envelope.ResourceEnvelopeTests.test_integer_limit_precedes_semantics) ... ok
+test_invalid_utf8 (test_resource_envelope.ResourceEnvelopeTests.test_invalid_utf8) ... ok
+test_nonfinite_constant (test_resource_envelope.ResourceEnvelopeTests.test_nonfinite_constant) ... ok
+test_parser_recursion_is_fail_closed (test_resource_envelope.ResourceEnvelopeTests.test_parser_recursion_is_fail_closed) ... ok
+test_scalar_dimensions_capped_before_table_recomputation (test_resource_envelope.ResourceEnvelopeTests.test_scalar_dimensions_capped_before_table_recomputation) ... ok
+test_transition_visit_limit_precedes_semantics (test_resource_envelope.ResourceEnvelopeTests.test_transition_visit_limit_precedes_semantics) ... ok
+test_valid_committed_certificate (test_resource_envelope.ResourceEnvelopeTests.test_valid_committed_certificate) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 0.107s
+
+OK

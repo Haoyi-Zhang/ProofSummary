@@ -1,0 +1,20 @@
+{
+  "factor_map": {
+    "err": "err",
+    "p0:0": "p0",
+    "p0:1": "p0",
+    "p1": "p1"
+  },
+  "negative_checks": {
+    "wrong_factor_target": true
+  },
+  "schema": "pcrh-refinement-audit-v1",
+  "status": "refinement_audit_passed",
+  "valid_relation": {
+    "accepted": true,
+    "coarse_edges": 2,
+    "coarse_states": 3,
+    "fine_edges": 2,
+    "fine_states": 4
+  }
+}

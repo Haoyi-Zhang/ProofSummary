@@ -141,7 +141,8 @@ def main() -> int:
                                          frontier_inspections=frontier_inspections)
         invoke(['src/public_replay.py', '--source', str(ROOT / 'results' / 'public-summary-cases'),
                 '--out', str(out / 'public-summary-cases')], out / 'public-summary-cases.txt')
-        public_compared = compare(ROOT / 'results' / 'public-summary-cases', out / 'public-summary-cases')
+        public_compared = compare(ROOT / 'results' / 'public-summary-cases', out / 'public-summary-cases',
+                                  frontier_inspections=frontier_inspections)
         invoke(['src/mutation_study.py', '--out', str(out / 'frontier-mutations')], out / 'frontier-mutations.txt')
         retained_mutations = json.loads((ROOT / 'results' / 'frontier-mutations' / 'summary.json').read_text())
         replay_mutations = json.loads((out / 'frontier-mutations' / 'summary.json').read_text())

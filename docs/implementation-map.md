@@ -81,3 +81,11 @@ every scientific field and checker count stays exact. Incomplete exceptions
 stay exact. The controller explicitly reports whether whole JSON/count equality
 holds and how many diagnostics were validated/different. It
 uses one worker and child resource limits. It does not read `paper/`.
+
+The same checked contract applies to public-summary detail records, because
+`public_replay.py` also calls the indexed frontier producer. Both completed
+safe/unsafe statuses require certificate presence. The mutation and byte-consumer
+drivers discard producer statistics; micro/aggregate drivers retain their exact
+scientific point/candidate counts. `tests/test_public_diagnostics.py` covers the
+six frozen public inputs and complete mutation summary without relaxing those
+other consumers or claiming a full Linux reproduction.

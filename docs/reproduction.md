@@ -70,7 +70,11 @@ report.
 
 ### Completed frontier inspection compatibility
 
-Only the two frontier phases opt into `src/frontier_diagnostics.py`. All inputs,
+The two frontier phases and six public-summary cases opt into
+`src/frontier_diagnostics.py`: all three drivers call the same indexed frontier
+producer. Both public `safe_bounded` and `optimal_bounded` records require
+completed production and certificate presence, even when the witness is null.
+All inputs,
 certificate JSON, CSV fields and scientific detail fields remain exact, including
 all checker statistics, producer `candidate_pairs`/`work`, rows, points, peaks,
 successor visits, dense/oracle results and retained legacy records. The sole
@@ -96,7 +100,10 @@ Both formulas are checked even if the counts happen to agree. A wrong retained
 count, a wrong current count, a missing count, or any changed scientific subtree
 fails comparison. Incomplete production has no returned statistics: its exact
 exception evidence remains required and no completed-count formula is applied.
-Other phases use exact comparison without this diagnostic contract. The
+Dense phases use exact comparison without this diagnostic contract. Mutation
+and byte-consumer drivers discard producer statistics; micro/aggregate drivers
+consume unchanged scientific point/candidate fields, not this inspection count.
+Their existing summary/byte/count checks remain exact. The
 original result files, timing values, functional hashes and byte-consumer
 fixtures are not rewritten. Inspection differences are not scientific candidate
 reductions or measured speedups.

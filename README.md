@@ -120,7 +120,7 @@ study or a full Unix reproduction. `edge_guard_checks` still counts actual
 recurrence inspections, which now exclude other sources' edges; this diagnostic
 change is not a reduction of frontier points or scientific candidate work.
 Witness extraction and the independent checker are unchanged. Archived result
-files remain unchanged. Only frontier-phase comparison uses
+files remain unchanged. Frontier-phase and public-summary comparison use
 `src/frontier_diagnostics.py`: for a completed query it requires the retained
 producer count to equal `H * 2**bits * len(nonerror_locations) * len(all_edges)`
 and the current producer count to equal
@@ -130,8 +130,10 @@ inspect nothing. Validation, index construction and witness scans are not in
 this recurrence counter. Both counts must be integers and are checked even
 when equal. Every other detail field, including checker inspections, shifted
 candidates and work caps, remains exact. Incomplete runs retain exact exception
-evidence, not a formula for partial work. Dense/public comparison has no such
-exception. Wrong counts on either side and changed scientific fields fail.
+evidence, not a formula for partial work. Public safe/unsafe records require
+completed production and a certificate, including bounded-safe null witnesses.
+Dense comparison has no diagnostic exception. Wrong counts on either side and
+changed scientific fields fail.
 
 `python -B tests/test_frontier_diagnostics.py` checks this contract on owned
 finite queries with an independently enumerated inspection-site reference and
@@ -140,6 +142,14 @@ cases and differing counts; `exact_json_evidence_equal` and
 `deterministic_count_fields_equal` are false when any inspection count differs,
 while scientific-equality flags require all comparisons to complete. This
 bounded regression does not establish a new full Unix reproduction or timing.
+
+`python -B tests/test_public_diagnostics.py` additionally exercises the actual
+public replay on all six unchanged frozen inputs, independent inspection-site
+and first-error-path enumeration, typed scientific-field/count rejection, and
+the complete 21-mutation summary. Normal unit discovery includes it. All other
+frontier-producer callers were traced: mutations and byte consumers discard its
+statistics, and micro/aggregate reports consume unchanged point/candidate fields.
+No archived evidence or measurement is updated by these tests.
 
 ## Check or produce one frontier certificate
 

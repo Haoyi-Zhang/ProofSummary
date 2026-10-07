@@ -37,6 +37,22 @@ jobs:
           timeout --signal=TERM --kill-after=10s 300s \
             python -B reproduce.py --out "$P076_OUTPUT/reproduction" \
             > "$P076_OUTPUT/reproduction.log" 2>&1
+      - name: Show reproduction failure details
+        if: failure()
+        shell: bash
+        run: |
+          python -B - <<'PY'
+          import os
+          from pathlib import Path
+          root = Path(os.environ['P076_OUTPUT'])
+          for path in (root / 'reproduction.log', root / 'reproduction' / 'reproduction.json'):
+              if path.is_file():
+                  print('\n' + path.name + '\n' + path.read_text(encoding='utf-8', errors='replace')[-12000:])
+          work = root / 'reproduction'
+          if work.is_dir():
+              for path in sorted(work.glob('*.txt')):
+                  print('\n' + path.name + '\n' + '\n'.join(path.read_text(encoding='utf-8', errors='replace').splitlines()[-25:]))
+          PY
       - name: Check supplementary exact arithmetic and refinement
         shell: bash
         run: |

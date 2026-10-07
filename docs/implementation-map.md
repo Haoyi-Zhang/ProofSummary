@@ -11,6 +11,7 @@
 | `src/frontier_study.py` | Runs producer/checker and optional dense/oracle comparisons under caps | Emits exact inputs, certificates, details, and CSV |
 | `src/frontier_replay.py` | Re-executes retained frontier inputs without regenerating selection | Used by clean reproduction |
 | `src/frontier_analyze.py` | Reconciles regression/stress metrics and generates paper-side rows/CSV when requested | Reads results only; no scientific solver logic |
+| `src/frontier_diagnostics.py` | Validates retained full-scan and current indexed recurrence inspection counts from query dimensions | No producer/checker imports; all other fields remain exact |
 
 ## Independent validation paths
 
@@ -52,7 +53,7 @@ and dependency path, yet all code remains same-project Python.
 - `tests/test_io_bounds.py`: duplicate keys, byte caps, product/row/work limits,
   and status discipline.
 
-The current suite has 93 methods (87 in the retained historical run), including type-sensitive embedded-query
+The current suite is discovered at execution (87 methods in the retained historical run), including type-sensitive embedded-query
 binding, minimum-initial witness ties, duplicate-key rejection, byte-cap limits,
 mock-clock deadline checks before zero/sub-128 work returns, and study fail gates
 that distinguish rejection, exhaustion, and positive acceptance. `results/` retains
@@ -69,9 +70,14 @@ corresponding executable JSON summaries are retained under
 
 ## Reproduction controller
 
-`reproduce.py` creates a fresh destination, runs the current 93 tests, replays four
+`reproduce.py` creates a fresh destination, discovers the current tests, replays four
 dense phases and two frontier phases, public cases, the 21 function-level
 mutations, the separate bounded byte-consumer study, and exhaustive micro
 validation, then regenerates both aggregate analyses. It compares exact JSON
-objects and all deterministic CSV fields while excluding only CPU and RSS. It
+objects and all deterministic CSV fields while excluding CPU and RSS. Only the
+completed frontier producer inspection diagnostic is separately required to
+satisfy the old full-scan and current source-index formulas, rather than equality;
+every scientific field and checker count stays exact. Incomplete exceptions
+stay exact. The controller explicitly reports whether whole JSON/count equality
+holds and how many diagnostics were validated/different. It
 uses one worker and child resource limits. It does not read `paper/`.

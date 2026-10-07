@@ -25,7 +25,7 @@ new evidence.
 
 ## Sequence executed
 
-1. `python -m unittest discover -s tests -v` (93 current test methods;
+1. `python -m unittest discover -s tests -v` (discover the current methods;
    the retained historical run had 87).
 2. Replay `interval-pilot`, `main`, `family`, and `boundary` dense phases.
 3. Compare each dense phase's input, certificate, detail JSON, and every
@@ -57,7 +57,8 @@ Required equality includes:
 - input selection and identifiers;
 - decoded query JSON;
 - decoded certificate JSON;
-- decoded detailed result JSON;
+- decoded detailed result JSON, with the validated frontier diagnostic contract
+  below;
 - result status, optimum/safety, witness resources, frontier points and widths,
   candidate/work counts, oracle/dense completion flags, mutation outcomes, and
   exhaustive stratum totals; and
@@ -67,9 +68,43 @@ CPU time and peak RSS are not required to match because they depend on the
 machine and process environment. Their measured values remain in the new run's
 report.
 
+### Completed frontier inspection compatibility
+
+Only the two frontier phases opt into `src/frontier_diagnostics.py`. All inputs,
+certificate JSON, CSV fields and scientific detail fields remain exact, including
+all checker statistics, producer `candidate_pairs`/`work`, rows, points, peaks,
+successor visits, dense/oracle results and retained legacy records. The sole
+non-equal detail field is `producer_statistics.edge_guard_checks`; it is not
+ignored. Both sides must independently satisfy query-derived formulas:
+
+```text
+retained full scan = H * width * number_of_nonerror_locations * number_of_all_edges
+current index     = H * width * number_of_edges_with_nonerror_source
+width             = 2**bits
+```
+
+At each positive layer, every register value at every non-error location is
+visited, including unreachable locations. The full scan inspects all syntactic
+edges; the index inspects that location's outgoing list, preserving input order.
+Disabled guards still require inspections. Error rows and layer zero inspect
+nothing; syntactic edges out of errors contribute only to the old all-edge scan.
+Gas caps, enabled-successor multiplicity and frontier width do not change these
+formulas. Validation, index construction and witness extraction are outside this
+recurrence counter. Count types must be integers, not booleans or floats.
+
+Both formulas are checked even if the counts happen to agree. A wrong retained
+count, a wrong current count, a missing count, or any changed scientific subtree
+fails comparison. Incomplete production has no returned statistics: its exact
+exception evidence remains required and no completed-count formula is applied.
+Other phases use exact comparison without this diagnostic contract. The
+original result files, timing values, functional hashes and byte-consumer
+fixtures are not rewritten. Inspection differences are not scientific candidate
+reductions or measured speedups.
+
 ## Success meaning
 
-A successful `reproduction.json` has:
+If a future complete run succeeds, `reproduction.json` includes these fields
+(this schema illustration is not evidence of a new run):
 
 ```json
 {
@@ -80,11 +115,19 @@ A successful `reproduction.json` has:
   "mutation_cases": 21,
   "exhaustive_micro_cases": 42372,
   "unit_test_suite_passed": true,
-  "exact_json_evidence_equal": true,
-  "deterministic_count_fields_equal": true,
+  "scientific_json_evidence_equal": true,
+  "scientific_count_fields_equal": true,
   "workers": 1
 }
 ```
+
+`frontier_inspection_contract` identifies the field and both scan modes and
+records `query_validated_cases` and `different_counts`. The existing
+`exact_json_evidence_equal` and `deterministic_count_fields_equal` flags are
+derived from whether any validated inspection counts differ; they are **false**
+when the counts differ. No claim of whole-JSON/count equality accompanies a
+successful scientific comparison under the diagnostic contract. The retained
+full-scan Linux run is unchanged; no indexed full Linux run is claimed here.
 
 This establishes reproducibility of the retained finite computations and
 artifacts. It does not establish that the Python checker is formally verified,
@@ -97,6 +140,12 @@ Tests only:
 
 ```sh
 python -m unittest discover -s tests -v
+```
+
+Portable diagnostic contract only (owned finite inputs; no measurements):
+
+```sh
+python -B tests/test_frontier_diagnostics.py
 ```
 
 One frontier certificate:

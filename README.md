@@ -87,12 +87,13 @@ From this repository root, choose a destination that does not yet exist:
 python reproduce.py --out /tmp/pmr-reproduction
 ```
 
-The controller refuses to overwrite an existing directory. It runs the current
-98-method unit suite and reconstructs the dense phases, frontier regression and stress
+The controller refuses to overwrite an existing directory. It discovers the
+current unit suite and reconstructs the dense phases, frontier regression and stress
 phases, public quotients, function-level mutation study, bounded byte-consumer
 study, exhaustive micro universe, and both aggregate analyses. It compares every
-retained input/certificate/detail JSON
-object and every deterministic CSV/count field. CPU time and peak RSS are
+retained input/certificate JSON object, every scientific detail field and every
+deterministic CSV/count field. The one changed frontier producer inspection
+diagnostic is validated under the explicit contract below, not equated. CPU time and peak RSS are
 reported but intentionally excluded from equality checks.
 
 A successful run writes:
@@ -109,6 +110,36 @@ Run only the tests with:
 ```sh
 python -m unittest discover -s tests -v
 ```
+
+The finite implementation regression `python -B tests/test_outgoing_index.py`
+constructs its own mathematical inputs and independently enumerates first-error
+paths for every tested row. It checks input-order-preserving recurrence indexing,
+complete certificates and deterministic witnesses, shifted-candidate cap
+boundaries, and bounded byte replay with fixed test clocks. This is not a timing
+study or a full Unix reproduction. `edge_guard_checks` still counts actual
+recurrence inspections, which now exclude other sources' edges; this diagnostic
+change is not a reduction of frontier points or scientific candidate work.
+Witness extraction and the independent checker are unchanged. Archived result
+files remain unchanged. Only frontier-phase comparison uses
+`src/frontier_diagnostics.py`: for a completed query it requires the retained
+producer count to equal `H * 2**bits * len(nonerror_locations) * len(all_edges)`
+and the current producer count to equal
+`H * 2**bits * len(edges_with_nonerror_source)`. This covers syntactic error
+edges, disabled guards and unreachable locations; layer zero and error rows
+inspect nothing. Validation, index construction and witness scans are not in
+this recurrence counter. Both counts must be integers and are checked even
+when equal. Every other detail field, including checker inspections, shifted
+candidates and work caps, remains exact. Incomplete runs retain exact exception
+evidence, not a formula for partial work. Dense/public comparison has no such
+exception. Wrong counts on either side and changed scientific fields fail.
+
+`python -B tests/test_frontier_diagnostics.py` checks this contract on owned
+finite queries with an independently enumerated inspection-site reference and
+negative controls. A successful controller report explicitly records validated
+cases and differing counts; `exact_json_evidence_equal` and
+`deterministic_count_fields_equal` are false when any inspection count differs,
+while scientific-equality flags require all comparisons to complete. This
+bounded regression does not establish a new full Unix reproduction or timing.
 
 ## Check or produce one frontier certificate
 
@@ -167,7 +198,7 @@ python src/interval_checker.py \
 - `src/producer.py`, `checker.py`, `interval_checker.py`, `oracle.py` - legacy
   dense/interval reference path.
 - `src/bad_search.py` - deliberately unsound gas/step/value-erasure controls.
-- `tests/` - 98 acceptance, rejection, type-binding, deadline, byte-boundary,
+- `tests/` - acceptance, rejection, type-binding, deadline, byte-boundary,
   frontier, and representation tests.
 - `results/` - exact inputs, certificates, detailed outcomes, CSV files, and
   aggregate JSON used by the paper.
@@ -198,9 +229,9 @@ size boundary, not the invention of independent optimality certification or
 Pareto dynamic programming.
 
 
-## Current reproduction
+## Retained Linux reproduction
 
-The current Ubuntu/CPython 3.12.14 clean run passed 98 main tests and replayed
+The retained Ubuntu/CPython 3.12.14 clean run passed 98 main tests and replayed
 661 dense queries, 675 frontier queries (including fourteen stress systems),
 six public quotients, 21 mutations, 24 byte-consumer cases, and the 42,372-query
 micro universe. Semantic outputs matched retained results, including the five
@@ -209,6 +240,8 @@ seconds and peak child RSS was 35,196 KiB; controller CPU time was 0.858427143
 seconds. The supplementary quotient run separately passed 34 tests and the
 refinement audit. Raw current records are retained under
 `results/measurements/current-linux/`; historical host records are unchanged.
+That run used the full-scan producer. It is not a rerun of the indexed producer
+or its diagnostic comparison contract.
 
 The bounded scientific workflow runs the Unix controller and supplementary
 tests and retains raw outputs on failure as well as success. Timing variation

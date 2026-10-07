@@ -106,12 +106,14 @@ def validate(p: Any) -> None:
 
 
 def successors(p: dict[str, Any], q: str, x: int, *, budget: WorkBudget | None = None,
-               counters: dict[str, int] | None = None) -> Iterable[tuple[dict[str, Any], int]]:
+               counters: dict[str, int] | None = None,
+               outgoing: Iterable[dict[str, Any]] | None = None
+               ) -> Iterable[tuple[dict[str, Any], int]]:
     if q in p["errors"]:
         return ()
     width = 1 << p["bits"]
     out: list[tuple[dict[str, Any], int]] = []
-    for edge in p["edges"]:
+    for edge in p["edges"] if outgoing is None else outgoing:
         if budget is not None:
             budget.check_time()
         if counters is not None:
@@ -163,6 +165,14 @@ def compute_frontiers(p: dict[str, Any], *, max_work: int = MAX_WORK,
     counters = {"edge_guard_checks": 0, "successor_visits": 0}
     temporary_candidate_peak = 0
     temporary_successor_peak = 0
+    # Validation has checked every syntactic edge, including edges out of errors.
+    # Preserve input order within each source; only recurrence scans use this
+    # index. Standalone successors and deterministic witness extraction retain
+    # their existing full-list path and ordering.
+    outgoing: dict[str, list[dict[str, Any]]] = {q: [] for q in p["locations"]}
+    for edge in p["edges"]:
+        budget.check_time()
+        outgoing[edge["src"]].append(edge)
     for h in range(p["steps"] + 1):
         for q in p["locations"]:
             for x in range(width):
@@ -175,7 +185,8 @@ def compute_frontiers(p: dict[str, Any], *, max_work: int = MAX_WORK,
                     front = ()
                 else:
                     candidates: list[tuple[int, int]] = []
-                    row_successors = list(successors(p, q, x, budget=budget, counters=counters))
+                    row_successors = list(successors(p, q, x, budget=budget, counters=counters,
+                                                     outgoing=outgoing[q]))
                     temporary_successor_peak = max(temporary_successor_peak, len(row_successors))
                     for edge, y in row_successors:
                         budget.check_time()

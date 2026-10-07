@@ -14,6 +14,7 @@ import sys
 import time
 import resource
 import re
+from src.frontier_diagnostics import InspectionCompatibility, same_json
 
 ROOT = Path(__file__).resolve().parent
 PHASES = ('interval-pilot', 'main', 'family', 'boundary')
@@ -35,7 +36,8 @@ def invoke(arguments: list[str], log: Path) -> None:
         raise RuntimeError(f'Command failed ({proc.returncode}); see {log.name}')
 
 
-def compare(source: Path, replay: Path) -> int:
+def compare(source: Path, replay: Path, *,
+            frontier_inspections: InspectionCompatibility | None = None) -> int:
     def read(path: Path) -> dict:
         with (path / 'raw.csv').open(newline='') as stream:
             return {r['id']: r for r in csv.DictReader(stream)}
@@ -43,6 +45,8 @@ def compare(source: Path, replay: Path) -> int:
     if set(old) != set(new):
         raise ValueError('Reproduction changed the input selection.')
     for name in old:
+        if set(old[name]) != set(new[name]):
+            raise ValueError(f'{name}: changed CSV fields')
         for key, value in old[name].items():
             if key.endswith('_cpu_s') or key == 'peak_rss_kib':
                 continue
@@ -56,8 +60,20 @@ def compare(source: Path, replay: Path) -> int:
             if source_file.exists():
                 a = json.loads(source_file.read_text())
                 b = json.loads(replay_file.read_text())
-                if a != b:
+                if folder == 'details' and frontier_inspections is not None:
+                    query = json.loads((source / 'inputs' / (name + '.json')).read_text())
+                    status = old[name]['status']
+                    if status not in ('optimal_bounded', 'safe_bounded', 'unknown'):
+                        raise ValueError(f'{name}: unsupported frontier status')
+                    complete = status != 'unknown'
+                    certificate_present = (source / 'certificates' / (name + '.json')).exists()
+                    if certificate_present != complete:
+                        raise ValueError(f'{name}: frontier status/certificate mismatch')
+                    frontier_inspections.compare_details(query, a, b, complete=complete)
+                elif not same_json(a, b):
                     raise ValueError(f'{name}: changed {folder} evidence')
+            elif frontier_inspections is not None and folder in ('inputs', 'details'):
+                raise ValueError(f'{name}: missing frontier {folder} evidence')
     return len(old)
 
 
@@ -117,10 +133,12 @@ def main() -> int:
                     '--out', str(out / phase)], out / (phase + '.txt'))
             compared += compare(ROOT / 'results' / phase, out / phase)
         frontier_compared = 0
+        frontier_inspections = InspectionCompatibility()
         for phase in FRONTIER_PHASES:
             invoke(['src/frontier_replay.py', '--source', str(ROOT / 'results' / phase),
                     '--out', str(out / phase)], out / (phase + '.txt'))
-            frontier_compared += compare(ROOT / 'results' / phase, out / phase)
+            frontier_compared += compare(ROOT / 'results' / phase, out / phase,
+                                         frontier_inspections=frontier_inspections)
         invoke(['src/public_replay.py', '--source', str(ROOT / 'results' / 'public-summary-cases'),
                 '--out', str(out / 'public-summary-cases')], out / 'public-summary-cases.txt')
         public_compared = compare(ROOT / 'results' / 'public-summary-cases', out / 'public-summary-cases')
@@ -150,8 +168,8 @@ def main() -> int:
                   'mutation_cases': replay_mutations['mutations'], 'consumer_boundary_positive_cases': consumer_summary['positive_cases'],
                   'consumer_boundary_negative_cases': consumer_summary['negative_cases'], 'consumer_boundary_files': consumer_files,
                   'exhaustive_micro_cases': tiny_cases, 'unit_test_methods': unit_tests,
-                  'unit_test_suite_passed': True, 'exact_json_evidence_equal': True,
-                  'deterministic_count_fields_equal': True,
+                  'unit_test_suite_passed': True,
+                  **frontier_inspections.report_fields(),
                   'timing_and_rss_equality_required': False, 'workers': 1,
                   'controller_cpu_seconds': time.process_time() - start_self,
                   'children_cpu_seconds': (end_children.ru_utime + end_children.ru_stime

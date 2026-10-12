@@ -266,3 +266,18 @@ files are under the upstream license reproduced in
 `public/sv-benchmarks-loop-acceleration/LICENSE`. Scholarly papers and official
 web pages are cited but not redistributed. The ACM class/style and their notices
 are part of the separate paper package, not this standalone repository.
+
+## Optional vector figures
+
+From the standalone artifact root, install the renderer dependencies if needed
+and generate the PDF figures:
+
+```sh
+python -m pip install "matplotlib==3.10.7" "fonttools==4.66.1"
+python -B scripts/plot_figures.py
+```
+
+The renderer uses an installed Linux Libertine O font or the TeX font lookup. The --font-file option selects an available regular Libertine font explicitly; neighboring italic and bold faces are used when present.
+
+This optional rendering step is separate from the scientific reproduction
+commands and works without a sibling paper directory.

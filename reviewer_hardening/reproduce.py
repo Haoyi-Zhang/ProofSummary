@@ -3,21 +3,12 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent
-
-
-def sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def run(cmd: list[str]) -> None:
@@ -82,12 +73,9 @@ def main(argv: list[str] | None = None) -> int:
         "schema": "pcrh-reviewer-hardening-reproduction-v2",
         "status": "semantic_reproduction_passed",
         "core_summary_relative_path": core_summary_path.relative_to(out).as_posix(),
-        "core_summary_sha256": sha256(core_summary_path),
         "resource_attack_summary": generated_obj,
-        "resource_attack_summary_sha256": sha256(generated),
         "committed_resource_evidence_equal": True,
         "refinement_audit_summary": refinement_obj,
-        "refinement_audit_summary_sha256": sha256(refinement_generated),
         "committed_refinement_evidence_equal": True,
     }
     (out / "reproduction-summary.json").write_text(

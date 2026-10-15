@@ -27,18 +27,6 @@ caller-supplied `expected_model_sha256` against the model itself. Retained
 legacy certificates without the annotation remain checkable; self-binding
 alone does not validate source-language translation or authenticate a model.
 
-## Repository-wide release gate
-
-From the full project root, a clean end-to-end gate is available as:
-
-```bash
-python paper/reviewer-audit/release_gate.py --work-dir /tmp/pcrh-release-gate
-```
-
-The work directory must not exist.  The command runs the combined artifact,
-rebuilds and audits the paper, checks the PDF and fonts, applies the claim
-linter, executes resource attacks, and verifies source-tree hygiene.
-
 ## Checkable refinement relation
 
 `pcrh.refinement_checker` does not trust a producer's “refined” label.  It

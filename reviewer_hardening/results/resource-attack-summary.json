@@ -1,0 +1,23 @@
+{
+  "attacks": {
+    "byte_limit": true,
+    "depth_limit": true,
+    "dict_limit": true,
+    "duplicate_key": true,
+    "float": true,
+    "huge_integer": true,
+    "invalid_utf8": true,
+    "list_limit": true,
+    "nan": true,
+    "node_limit": true,
+    "parser_recursion": true,
+    "positive_infinity": true,
+    "top_level_array": true,
+    "truncated_json": true
+  },
+  "attacks_rejected": 14,
+  "attacks_total": 14,
+  "schema": "pcrh-resource-attacks-v1",
+  "status": "resource_envelope_passed",
+  "valid_certificate_accepted": true
+}

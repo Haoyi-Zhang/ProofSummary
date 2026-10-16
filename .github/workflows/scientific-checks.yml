@@ -67,6 +67,10 @@ jobs:
           timeout --signal=TERM --kill-after=5s 30s \
             python -B scripts/run_refinement_audit.py --out "$P076_OUTPUT/refinement" \
             > "$P076_OUTPUT/refinement.log" 2>&1
+      - name: Rebuild and check semantic diagrams
+        run: |
+          python -m pip install matplotlib
+          python -B figures/draw_diagrams.py --check
       - name: Retain raw outputs even when a gate fails
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

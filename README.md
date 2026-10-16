@@ -74,6 +74,23 @@ oracle rather than as oracle agreements.
 
 ## Environment
 
+Two additional regressions check the finite frontier point at gas zero and
+the case where both comparison implementations return `unknown`. The latter
+is recorded as `incomplete`, not an agreement. The fourteen retained stress
+rows have at least one completed comparison each and keep their reported results.
+
+The three semantic diagrams can be redrawn with optional Matplotlib, separately
+from the standard-library scientific runner:
+
+```sh
+python -m pip install matplotlib
+python -B figures/draw_diagrams.py --output-dir figures
+python -B figures/draw_diagrams.py --check
+```
+
+Check mode verifies the illustrated resource relationships and deterministic
+generation in two fresh directories. The same PDFs are included in the paper.
+
 Use Linux/Unix and Python 3.10 or later. Only the Python standard library is
 required. The full reproduction uses the Unix `resource` module. No package
 installation, network access, solver, GPU, model API, private data, paper file,

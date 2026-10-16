@@ -156,7 +156,7 @@ def run_one(p: dict[str, Any], group: str, source_phase: str, out: Path,
     if oracle["status"] != "unknown":
         agreements.append((checked["status"], checked["upper"], checked["initial_frontier"]) ==
                           (oracle["status"], oracle["cost"], oracle["frontier"]))
-    row["agreement"] = "yes" if all(agreements) else "NO"
+    row["agreement"] = ("yes" if all(agreements) else "NO") if agreements else "incomplete"
     row["peak_rss_kib"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     details = {
         "checker": checked,

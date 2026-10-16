@@ -28,6 +28,16 @@ class _CountingClock:
 
 
 class FrontierCertificateTests(unittest.TestCase):
+    def test_zero_gas_first_finite_frontier_point(self) -> None:
+        p = program("zero-gas-first-finite", ["s", "z"],
+                    [edge(0, "s", "z", gas=0, cost=1)], gas=3, steps=1)
+        certificate, _ = produce(p)
+        checked = check(p, certificate)
+        enumerated = enumerate_frontier(p)
+        self.assertEqual([[0, 1]], checked["initial_frontier"])
+        self.assertEqual([[0, 1]], enumerated["frontier"])
+        self.assertEqual(1, checked["upper"])
+
     def test_tradeoff_frontier_is_exact(self) -> None:
         p = tradeoff_chain(6)
         certificate, stats = produce(p)

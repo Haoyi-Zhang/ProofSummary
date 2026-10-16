@@ -23,13 +23,23 @@ else:
     consumer_study = importlib.import_module("consumer_boundary_study")
 import mutation_study
 
-from frontier_cases import tradeoff_chain
+from frontier_cases import dominated_diamond, tradeoff_chain
 
 
 class StudyFailureTests(unittest.TestCase):
-    def run_case(self):
+    def run_case(self, query=None):
         with patch.object(study, "_write_json"), patch.object(Path, "write_text"):
-            return study.run_one(tradeoff_chain(2), "test", "", Path("unused"))
+            return study.run_one(query or tradeoff_chain(2), "test", "", Path("unused"))
+
+    def test_both_baselines_unknown_are_not_an_agreement(self):
+        query = dominated_diamond(24)
+        query["gas"] = 1_000_000
+        row = self.run_case(query)
+        self.assertEqual("optimal_bounded", row["status"])
+        self.assertEqual("unknown", row["dense_status"])
+        self.assertEqual("unknown", row["oracle_status"])
+        self.assertEqual(1, row["max_frontier_width"])
+        self.assertEqual("incomplete", row["agreement"])
 
     def test_dense_rejection_is_not_ignored_as_unknown(self):
         with patch.object(study, "check_dense", side_effect=study.DenseCheckReject("false evidence")):
